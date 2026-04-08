@@ -111,6 +111,10 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     ws_ds["A51"] = "CA Target"; ws_ds["B51"] = "=IF(B5=0, B37 * 0.8, MIN(B37 * 0.8, B5 * 1.1))"
     ws_ds["A52"] = "Total CA Payments YTD"; ws_ds["B52"] = "=SUM('Wage Snapshots'!F:F) + SUMIFS(F3:F10, G3:G10, \"CA*\")"
 
+    # --- Data Validation (Restored) ---
+    dv_status = DataValidation(type="list", formula1='"Single,MFJ,MFS,HoH"', showErrorMessage=True)
+    ws_ds.add_data_validation(dv_status); dv_status.add(ws_ds["B2"])
+
     for i, q in enumerate(["Q1 (Apr 15)", "Q2 (Jun 15)", "Q3 (Sep 15)", "Q4 (Jan 15)"], 1):
         ws_ds[f"A{54+i}"] = q; ws_ds[f"B{54+i}"] = f"=B49 * {0.25*i}"; ws_ds[f"C{54+i}"] = f"=MAX(0, B{54+i} - B50)"
         rate = [0.3, 0.7, 0.7, 1.0][i-1]
