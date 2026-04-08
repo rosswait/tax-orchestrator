@@ -16,6 +16,7 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     FORMAT_PERCENT = '0.00%'
 
     # --- 0. Shared Tax Logic Constants ---
+    LOGIC_YEAR = 2025
     fed_ord_brackets = [
         ["Single", 0, 0, 0.10, 15000], ["Single", 11925, 1192.50, 0.12, 15000], ["Single", 48475, 5578.50, 0.22, 15000], ["Single", 103350, 17651, 0.24, 15000], ["Single", 197300, 40199, 0.32, 15000], ["Single", 250525, 57231, 0.35, 15000], ["Single", 626350, 188770, 0.37, 15000],
         ["MFJ", 0, 0, 0.10, 30000], ["MFJ", 23850, 2385, 0.12, 30000], ["MFJ", 96950, 11157, 0.22, 30000], ["MFJ", 206700, 35302, 0.24, 30000], ["MFJ", 394600, 80398, 0.32, 30000], ["MFJ", 501050, 114462, 0.35, 30000], ["MFJ", 751600, 202154.50, 0.37, 30000],
@@ -147,13 +148,13 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     ws_ds["I20"] = "Marginal Fed Bracket:"; ws_ds["J20"] = "=XLOOKUP(B28, FILTER('Tax Constants'!C3:C30, 'Tax Constants'!B3:B30=B2), FILTER('Tax Constants'!D3:D30, 'Tax Constants'!B3:B30=B2), 0, -1)"
     ws_ds["I21"] = "Marginal CA Bracket:"; ws_ds["J21"] = "=XLOOKUP(B34, FILTER('Tax Constants'!C49:C84, 'Tax Constants'!B49:B84=B2), FILTER('Tax Constants'!D49:D84, 'Tax Constants'!B49:B84=B2), 0, -1)"
     ws_ds["I22"] = "Deduction Applied:"; ws_ds["J22"] = "=IF(B6>XLOOKUP(B2, 'Tax Constants'!B3:B30, 'Tax Constants'!B3:B30=B2), \"ITEMIZED\", \"STANDARD\")"
-    ws_ds["I23"] = "Bracket Year:"; ws_ds["J23"] = year
+    ws_ds["I23"] = "Bracket Year:"; ws_ds["J23"] = LOGIC_YEAR
     
     ws_ds["I25"] = "ACTIVE WARNINGS"
     ws_ds["I26"] = "Stale Snapshots:"; ws_ds["J26"] = "=IF(OR(MAX('Wage Snapshots'!A:A)=0, (B9 - MAX('Wage Snapshots'!A:A)) > 30), \"🔴 !!! 30+ DAYS OLD !!!\", \"OK\")"
     ws_ds["I27"] = "Prior Year Data:"; ws_ds["J27"] = "=IF(B4=0, \"🔴 WARNING: FED MISSING\", \"OK\")"
     ws_ds["I28"] = "HSA Verification (CA):"; ws_ds["J28"] = "=IF(SUM('Wage Snapshots'!D:D)=0, \"✅ No HSA Detected\", IF(B20=B19, \"🔴 ERR: HSA NOT ADDED TO CA\", \"✅ HSA Corrected (CA)\"))"
-    ws_ds["I29"] = "Bracket Staleness:"; ws_ds["J29"] = "=IF(B8 > J23, \"⚠️ BRACKETS STALE (USING \"&J23&\" PROXY)\", \"OK\")"
+    ws_ds["I29"] = "Bracket Staleness:"; ws_ds["J29"] = f"=IF(B8 > J23, \"⚠️ BRACKETS STALE (USING {LOGIC_YEAR} PROXY)\", \"OK\")"
 
     # --- 5. Data & Constants Tabs ---
     ws_inv = wb.create_sheet("Investment Income Snapshots")
@@ -163,16 +164,16 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     ws_const = wb.create_sheet("Tax Constants")
     ws_const.append(["Table A: Federal Brackets (Ordinary Income)"])
     ws_const.append(["Year", "Status", "Bracket Floor", "Base Tax", "Marginal Rate", "Standard Deduction"])
-    for row in fed_ord_brackets: ws_const.append([year] + row)
+    for row in fed_ord_brackets: ws_const.append([LOGIC_YEAR] + row)
     ws_const.append([]); ws_const.append(["Table B: Federal Capital Gains Brackets"])
     ws_const.append(["Year", "Status", "Bracket Floor", "LTCG Rate"])
-    for row in fed_cg_brackets: ws_const.append([year] + row)
+    for row in fed_cg_brackets: ws_const.append([LOGIC_YEAR] + row)
     ws_const.append([]); ws_const.append(["Table C: California FTB Brackets"])
     ws_const.append(["Year", "Status", "Bracket Floor", "Base Tax", "Marginal Rate", "Standard Deduction", "MH Surcharge Floor"])
-    for row in ca_brackets: ws_const.append([year] + row)
+    for row in ca_brackets: ws_const.append([LOGIC_YEAR] + row)
     ws_const.append([]); ws_const.append(["Table D: Surtaxes & Phaseouts"])
     ws_const.append(["Year", "Status", "NIIT Threshold", "Addl Medicare", "CTC Phaseout Start"])
-    for row in surtaxes: ws_const.append([year] + row)
+    for row in surtaxes: ws_const.append([LOGIC_YEAR] + row)
 
     # --- 6. AI Instructions Tab (New / Last) ---
     ws_ai = wb.create_sheet("AI Parsing Instructions")
