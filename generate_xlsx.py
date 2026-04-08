@@ -59,7 +59,7 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     ws_ds["A5"] = "Prior Year CA Tax (Safe Harbor)"; ws_ds["B5"] = 0
     ws_ds["A6"] = "Estimated Fed Itemized Deduction"; ws_ds["B6"] = 0
     ws_ds["A7"] = "Estimated CA Itemized Deduction"; ws_ds["B7"] = 0
-    ws_ds["A8"] = "Tax Year"; ws_ds["B8"] = year
+    ws_ds["A8"] = "Estimated Tax Year"; ws_ds["B8"] = "=IF(AND(MONTH(B9)=1, DAY(B9)<=30), YEAR(B9)-1, YEAR(B9))"
     ws_ds["A9"] = "Status Date"; ws_ds["B9"] = "=TODAY()"
 
     ws_ds["A11"] = "Projection & Assumptions"
@@ -101,10 +101,10 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
 
     ws_ds["D1"] = "Estimated Tax Payments Ledger"
     ws_ds["D2"] = "Date"; ws_ds["E2"] = "Calculated Estimate (Optional)"; ws_ds["F2"] = "Actual Payment Made (Required)"; ws_ds["G2"] = "Note"
-    ws_ds["D3"]=f"04/15/{year}"; ws_ds["G3"]="Fed Q1"; ws_ds["D4"]=f"04/15/{year}"; ws_ds["G4"]="CA Q1"
-    ws_ds["D5"]=f"06/15/{year}"; ws_ds["G5"]="Fed Q2"; ws_ds["D6"]=f"06/15/{year}"; ws_ds["G6"]="CA Q2"
-    ws_ds["D7"]=f"09/15/{year}"; ws_ds["G7"]="Fed Q3"; ws_ds["D8"]=f"09/15/{year}"; ws_ds["G8"]="CA Q3"
-    ws_ds["D9"]=f"01/15/{year+1}"; ws_ds["G9"]="Fed Q4"; ws_ds["D10"]=f"01/15/{year+1}"; ws_ds["G10"]="CA Q4"
+    ws_ds["D3"]=f"=DATE(B8,4,15)"; ws_ds["G3"]="Fed Q1"; ws_ds["D4"]=f"=DATE(B8,4,15)"; ws_ds["G4"]="CA Q1"
+    ws_ds["D5"]=f"=DATE(B8,6,15)"; ws_ds["G5"]="Fed Q2"; ws_ds["D6"]=f"=DATE(B8,6,15)"; ws_ds["G6"]="CA Q2"
+    ws_ds["D7"]=f"=DATE(B8,9,15)"; ws_ds["G7"]="Fed Q3"; ws_ds["D8"]=f"=DATE(B8,9,15)"; ws_ds["G8"]="CA Q3"
+    ws_ds["D9"]=f"=DATE(B8+1,1,15)"; ws_ds["G9"]="Fed Q4"; ws_ds["D10"]=f"=DATE(B8+1,1,15)"; ws_ds["G10"]="CA Q4"
 
     ws_ds["A48"] = "Payment Requirements"
     ws_ds["A49"] = "Fed Target"; ws_ds["B49"] = "=IF(B4=0, B46 * 0.9, MIN(B46 * 0.9, B4 * 1.1))"
@@ -122,6 +122,8 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
         ws_ds[f"A{60+i}"] = q; ws_ds[f"B{60+i}"] = f"=B51 * {rate}"; ws_ds[f"C{60+i}"] = f"=MAX(0, B{60+i} - B52)"
 
     # --- Data Validation (Restored) ---
+    dv_status = DataValidation(type="list", formula1='"Single,MFJ,MFS,HoH"', showErrorMessage=True)
+    ws_ds.add_data_validation(dv_status); dv_status.add(ws_ds["B2"])
 
     # --- Right Side Status Panel ---
     ws_ds["I1"] = "PAYMENT ACTION CENTER"
@@ -142,15 +144,16 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     ws_ds["I17"] = "CA Target Method:"; ws_ds["J17"] = "=IF(B5=0, \"80% Forecast\", IF(B37*0.8 < B5*1.1, \"80% Forecast\", \"110% Safe Harbor\"))"
     ws_ds["I18"] = "Effective Fed Rate:"; ws_ds["J18"] = "=B46 / MAX(1, B23)"
     ws_ds["I19"] = "Effective CA Rate:"; ws_ds["J19"] = "=B37 / MAX(1, B23)"
-    ws_ds["I20"] = "Marginal Fed Bracket:"; ws_ds["J20"] = "=XLOOKUP(B28, FILTER('Tax Constants'!B3:B30, 'Tax Constants'!A3:A30=B2), FILTER('Tax Constants'!D3:D30, 'Tax Constants'!A3:A30=B2), 0, -1)"
-    ws_ds["I21"] = "Marginal CA Bracket:"; ws_ds["J21"] = "=XLOOKUP(B34, FILTER('Tax Constants'!C49:C84, 'Tax Constants'!B49:B84=B2), FILTER('Tax Constants'!E49:E84, 'Tax Constants'!B49:B84=B2), 0, -1)"
+    ws_ds["I20"] = "Marginal Fed Bracket:"; ws_ds["J20"] = "=XLOOKUP(B28, FILTER('Tax Constants'!C3:C30, 'Tax Constants'!B3:B30=B2), FILTER('Tax Constants'!D3:D30, 'Tax Constants'!B3:B30=B2), 0, -1)"
+    ws_ds["I21"] = "Marginal CA Bracket:"; ws_ds["J21"] = "=XLOOKUP(B34, FILTER('Tax Constants'!C49:C84, 'Tax Constants'!B49:B84=B2), FILTER('Tax Constants'!D49:D84, 'Tax Constants'!B49:B84=B2), 0, -1)"
     ws_ds["I22"] = "Deduction Applied:"; ws_ds["J22"] = "=IF(B6>XLOOKUP(B2, 'Tax Constants'!B3:B30, 'Tax Constants'!B3:B30=B2), \"ITEMIZED\", \"STANDARD\")"
-    ws_ds["I23"] = "Bracket Year:"; ws_ds["J23"] = "=B8"
+    ws_ds["I23"] = "Bracket Year:"; ws_ds["J23"] = year
     
     ws_ds["I25"] = "ACTIVE WARNINGS"
     ws_ds["I26"] = "Stale Snapshots:"; ws_ds["J26"] = "=IF(OR(MAX('Wage Snapshots'!A:A)=0, (B9 - MAX('Wage Snapshots'!A:A)) > 30), \"🔴 !!! 30+ DAYS OLD !!!\", \"OK\")"
     ws_ds["I27"] = "Prior Year Data:"; ws_ds["J27"] = "=IF(B4=0, \"🔴 WARNING: FED MISSING\", \"OK\")"
     ws_ds["I28"] = "HSA Verification (CA):"; ws_ds["J28"] = "=IF(SUM('Wage Snapshots'!D:D)=0, \"✅ No HSA Detected\", IF(B20=B19, \"🔴 ERR: HSA NOT ADDED TO CA\", \"✅ HSA Corrected (CA)\"))"
+    ws_ds["I29"] = "Bracket Staleness:"; ws_ds["J29"] = "=IF(B8 > J23, \"⚠️ BRACKETS STALE (USING \"&J23&\" PROXY)\", \"OK\")"
 
     # --- 5. Data & Constants Tabs ---
     ws_inv = wb.create_sheet("Investment Income Snapshots")
@@ -202,7 +205,8 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
         "I19": "Total projected California Tax divided by Federal AGI. (Standardized against Federal AGI for comparability).",
         "I21": "The highest tax rate applied to your last dollar of California income.",
         "I23": "Confirms which year's tax brackets are being applied by the simulation. All logic in this sheet pivots off this value.",
-        "I28": "HSA Verification: Checks that HSA contributions are added back to California income. If you do not have an HSA, this will simply confirm 'No HSA Detected'."
+        "I28": "HSA Verification: Checks that HSA contributions are added back to California income. If you do not have an HSA, this will simply confirm 'No HSA Detected'.",
+        "I29": "Occurs when your Status Date is set to a tax year for which new brackets have not yet been released. Using the previous year's brackets is a safe, conservative proxy that slightly overstates liability (as it ignores inflation-based bracket growth)."
     }
 
     # --- Premium Formatting Engine ---
@@ -215,7 +219,7 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     st_border = Border(top=side, left=side, right=side, bottom=side)
     
     sec_k = ["Configuration", "Notes", "Quick Start", "Assumptions", "Projection", "Calculation", "Requirements", "Ledger", "SCHEDULE", "CENTER", "DIAGNOSTICS", "WARNINGS", "AI Parsing", "PROMPT"]
-    in_c = ["B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9", "B12", "B13", "B14", "B15"]
+    in_c = ["B2", "B3", "B4", "B5", "B6", "B7", "B9", "B12", "B13", "B14", "B15"]
 
     for ws in wb.worksheets:
         for row in ws.iter_rows():
@@ -252,6 +256,9 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
                     if coord in in_c or (cell.column in [4,5,6,7] and 3 <= cell.row <= 10): cell.fill = st_in
                     if cell.column in [5, 6, 7] and 2 <= cell.row <= 10: cell.font = st_calc
                     
+                    # Highlight J29 if stale
+                    if coord == "J29": cell.fill = st_in
+
                     # Action Center Style (Background only for data rows, no border)
                     if (9 <= cell.column <= 10 and 1 <= cell.row <= 13):
                         if cell.row == 1:
@@ -268,7 +275,7 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
                     if cell.column == 3 and (55 <= cell.row <= 64): cell.number_format = FORMAT_CURRENCY
                     if cell.column == 10:
                         if cell.row in [2,4,5,8,10,11]: cell.number_format = FORMAT_CURRENCY
-                        elif cell.row in [18,19,20,21]: cell.number_format = FORMAT_PERCENT
+                        elif cell.row in [18,19,20,21,23]: cell.number_format = FORMAT_PERCENT
                     if cell.column == 4 and 3 <= cell.row <= 10: cell.number_format = FORMAT_DATE
                     if cell.column in [5,6] and 3 <= cell.row <= 10: cell.number_format = FORMAT_CURRENCY
                 elif ws.title in ["Wage Snapshots", "Investment Income Snapshots"] and cell.row > 1:
