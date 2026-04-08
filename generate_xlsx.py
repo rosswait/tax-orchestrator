@@ -198,16 +198,21 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     ws_const.append(["Year", "Status", "NIIT Threshold", "Addl Medicare", "CTC Phaseout Start"])
     for row in surtaxes: ws_const.append([LOGIC_YEAR] + row)
 
-    # --- 6. AI Instructions Tab (New / Last) ---
-    ws_ai = wb.create_sheet("AI Parsing Instructions")
+    # --- 6. Parsing Instructions for Agents (Last) ---
+    ws_ai = wb.create_sheet("Parsing Instructions for Agents")
     ws_ai.append(["PROMPT INSTRUCTIONS"])
     ws_ai.append(["Copy and paste the text below into an AI (like Gemini, ChatGPT, or Claude) along with your paystubs or brokerage statements to automatically extract the data for this workbook."])
     ws_ai.append([""])
+    
     instr_path = "parsing_agent_instructions.md"
     if os.path.exists(instr_path):
         with open(instr_path, "r") as f:
-            for line in f:
-                ws_ai.append([line.strip()])
+            full_text = f.read()
+        
+        ws_ai["A4"] = full_text
+        ws_ai["A4"].alignment = Alignment(wrap_text=True, vertical="top")
+        ws_ai.column_dimensions["A"].width = 100
+        ws_ai.row_dimensions[4].height = 600
     else:
         ws_ai.append(["[Error: parsing_agent_instructions.md not found. Please ensure the file exists in the current directory.]"])
 
