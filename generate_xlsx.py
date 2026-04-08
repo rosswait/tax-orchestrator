@@ -269,13 +269,15 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
                     if cell.coordinate in ["I2", "J2", "I8", "J8"]: cell.font = st_crit
                     
                     if cell.column == 2:
-                        if (4 <= cell.row <= 52) or (55 <= cell.row <= 64): cell.number_format = FORMAT_CURRENCY
+                        if cell.row == 8: cell.number_format = '0'
+                        elif (4 <= cell.row <= 52) or (55 <= cell.row <= 64): cell.number_format = FORMAT_CURRENCY
                         elif cell.row == 13: cell.number_format = FORMAT_PERCENT
                         elif cell.row == 9: cell.number_format = FORMAT_DATE
                     if cell.column == 3 and (55 <= cell.row <= 64): cell.number_format = FORMAT_CURRENCY
                     if cell.column == 10:
-                        if cell.row in [2,4,5,8,10,11]: cell.number_format = FORMAT_CURRENCY
-                        elif cell.row in [18,19,20,21,23]: cell.number_format = FORMAT_PERCENT
+                        if cell.row == 23: cell.number_format = '0'
+                        elif cell.row in [2,4,5,8,10,11]: cell.number_format = FORMAT_CURRENCY
+                        elif cell.row in [18,19,20,21]: cell.number_format = FORMAT_PERCENT
                     if cell.column == 4 and 3 <= cell.row <= 10: cell.number_format = FORMAT_DATE
                     if cell.column in [5,6] and 3 <= cell.row <= 10: cell.number_format = FORMAT_CURRENCY
                 elif ws.title in ["Wage Snapshots", "Investment Income Snapshots"] and cell.row > 1:
