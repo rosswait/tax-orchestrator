@@ -1,6 +1,8 @@
-# 📊 Universal Tax Orchestrator
+# 📊 Estimated Tax Calculator
 
-The **Universal Tax Orchestrator** is an automated Federal and California tax projection engine. It replaces manual spreadsheets with a high-fidelity, "Actuals-First" architecture that uses YTD snapshots from wages and investments to automate quarterly estimated tax liabilities.
+The **Estimated Tax Calculator** is an automated Federal and California tax projection engine. It generates a Excel workbook that allows you to track your estimated tax liability and payments throughout the year. 
+
+It also includes markdown instructions for an LLM agent to translate paystub and brokerage statements (or snapshots) into the required format for the Excel workbook.
 
 ---
 
