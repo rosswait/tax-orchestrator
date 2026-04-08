@@ -166,7 +166,7 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     # --- Extensive Annotations (Refined: No Headers in text) ---
     ANN = {
         "D1": "Record your quarterly estimated tax payments made directly to the IRS or FTB here. This is the primary source of truth for tracking payments made outside of payroll withholding.",
-        "E2": "MANUAL ENTRY. This field is NOT auto-populated. It is provided as a convenience for you to manually log what the system recommended at the time of your payment for your records.",
+        "E2": "MANUAL ENTRY. This field is not auto-populated. It is provided as a convenience for you to manually log what the system recommended at the time of your payment for your records.",
         "F2": "ENTER PAYMENTS HERE. This field is REQUIRED to accurately calculate your 'DUE NOW' totals in the Action Center. This ensures the system recognizes your progress and doesn't double-count required taxes.",
         "G2": "Track payment confirmation numbers, specific quarterly intent, or voucher details here.",
         "B4": "Enter your total tax from last year's Federal Form 1040 (typically Line 24 minus Line 19).",
@@ -212,10 +212,12 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
                     if coord in in_c or (cell.column in [4,5,6,7] and 3 <= cell.row <= 10): cell.fill = st_in
                     if cell.column in [5, 6, 7] and 2 <= cell.row <= 10: cell.font = st_calc
                     
-                    # Action Center Style (Border + Background)
+                    # Action Center Style (Background only for data rows, no border)
                     if (9 <= cell.column <= 10 and 1 <= cell.row <= 13):
-                        cell.fill = st_ac_bg
-                        cell.border = st_border
+                        if cell.row == 1:
+                             cell.font, cell.fill = st_sec
+                        else:
+                             cell.fill = st_ac_bg
                     
                     if cell.coordinate in ["I2", "J2", "I8", "J8"]: cell.font = st_crit
                     
