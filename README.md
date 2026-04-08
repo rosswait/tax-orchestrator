@@ -1,8 +1,8 @@
 # 📊 Estimated Tax Calculator
 
-The **Estimated Tax Calculator** is an automated Federal and California tax projection engine. It generates a Excel workbook that allows you to track your estimated tax liability and payments throughout the year. 
+The **Estimated Tax Calculator** is an automated Federal and California tax projection engine. It generates a sophisticated Excel workbook that allows you to track your estimated tax liability and payments throughout the year with minimal manual entry.
 
-It also includes markdown instructions for an LLM agent to translate paystub and brokerage statements (or snapshots) into the required format for the Excel workbook.
+It also includes integrated instructions for an LLM agent to translate paystub and brokerage statements directly into the required format for the workbook.
 
 ---
 
@@ -10,51 +10,55 @@ It also includes markdown instructions for an LLM agent to translate paystub and
 
 ### 1. Smart Status Dashboard
 The workbook features a dedicated **Action Center** and **Diagnostics Panel** that answers:
-- **"How much do I owe today?"** - Dynamic detection of the next quarterly deadline (Apr 15, Jun 15, Sep 15, Jan 15).
-- **"Am I safe?"** - Automatic calculation of Safe Harbor (110% Prior Year) vs. 90% Forecast targets.
+- **"How much do I owe today?"** - Dynamic detection of the next quarterly deadline (Apr 15, Jun 15, Sep 15, Jan 15) and required payments.
+- **"Am I safe?"** - Automatic calculation of Safe Harbor (110% Prior Year) vs. 90% Forecast targets, prioritizing the most conservative baseline.
 - **"What is my tax health?"** - Real-time Effective Tax Rates, Marginal Brackets, and Itemization vs. Standard audits.
 
-### 2. Year-Agnostic Engine
-Supports any tax year via a simple CLI parameter. All internal formulas pivot from a single "Tax Year" configuration cell, correctly handling year-over-year date shifts (including Q4 January deadlines).
+### 2. Automated Tax Year Logic
+The engine automatically infers the target tax year based on the current date:
+- **January Buffer**: Correctly defaults to the previous tax year during the Jan 1st - 30th "Q4 Hangover" period, ensuring accurate finalization of the previous year's taxes.
+- **Bracket Staleness Handling**: If no data exists for the projected year, the engine uses the most recent available constants as a safe, conservative proxy and triggers an alert.
 
-### 3. Progressive Tax Logic
-- **Federal**: 2026 Ordinary and Capital Gains brackets for all filing statuses (Single, MFJ, MFS, HoH).
-- **California**: CA FTB progressive logic, including the 1% Mental Health Services Surcharge for high-income earners.
-- **Surtaxes**: Integrated Federal NIIT, Additional Medicare, and Child Tax Credit phase-outs.
+### 3. Decoupled Tax Constants
+Tax laws are stored in the `constants/` directory, organized by year (e.g., `constants/2025/`). 
+- **Federal**: Ordinary and Capital Gains brackets for all filing statuses (Single, MFJ, MFS, HoH).
+- **California**: progressive logic, including the 1% Mental Health Services Surcharge.
+- **Surtaxes**: Integrated NIIT, Additional Medicare, and CTC phase-outs.
 
 ### 4. Pro-Active Warning System
 The dashboard automatically flags:
 - **Stale Snapshots**: Alerts if your latest paystub is >30 days old.
-- **Prior Year Missing**: Warns when safe-harbor targets are unverified.
-- **HSA Audit**: Verification of state-tax deduction exclusions.
+- **Bracket Staleness**: Specific Federal and CA alerts when using historical data as a proxy for the next year.
+- **HSA Audit**: Verification that state-tax deductions are correctly excluded for California.
 
 ---
 
 ## 🛠️ Usage
 
 ### 1. Generation
-Run the Python script to generate a clean, formatted `.xlsx` template pre-configured for your situation.
+Run the Python script to generate a clean, formatted `.xlsx` template.
 
 ```bash
-# Generate for 2026, Single Filer, 0 Dependents
-./venv/bin/python generate_xlsx.py --year 2026 --status Single --dependents 0
+# Generate for current inferred year (default), Single Filer, 0 Dependents
+./venv/bin/python generate_xlsx.py --status Single --dependents 0
 ```
 
 ### 2. Data Entry (Snapshots)
-Instead of entering every transaction, use the **Snapshots** tabs:
-- **Wage Snapshots**: Enter your latest paystub total gross, deductions, and withholdings. The engine will pro-rate the rest of the year automatically based on days elapsed.
-- **Investment Snapshots**: Enter your YTD statements for dividends and capital gains. 
+Instead of entering every transaction, use the **Snapshots** methodology:
+- **Wage Snapshots**: Enter your latest YTD paystub totals. The engine will pro-rate the rest of the year automatically based on days elapsed.
+- **Investment Snapshots**: Enter your cumulative YTD statements. 
 
-### 3. AI Enrichment (Optional)
-Use the included `gem_instructions.md` with Gemini to extract snapshot-ready data directly from your PDF paystubs or brokerage statements.
+### 3. Agent-Assisted Parsing
+Use the included `parsing_agent_instructions.md` (also found in the Excel tab "Parsing Instructions for Agents") with Gemini or ChatGPT to extract snapshot-ready data directly from your PDF statements.
 
 ---
 
 ## 📋 Sheet Structure
-- **Dashboard**: High-level status board, Action Center, Diagnostics, and full tax engine.
+- **Dashboard**: High-level status board, Action Center, and calculation engine.
 - **Wage Snapshots**: Input ledger for W-2 income records.
-- **Investment Income Snapshots**: Input ledger for brokerage/capital gains records.
-- **Tax Constants**: The source-of-truth for all Federal and CA tax brackets.
+- **Investment Income Snapshots**: Input ledger for brokerage records.
+- **Tax Constants**: Self-documenting table of the Federal and CA data used in the simulation.
+- **Parsing Instructions for Agents**: Embedded prompt for use with LLMs.
 
 ---
 
