@@ -205,10 +205,19 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
                 if ws.title == "Dashboard" and coord in ANN:
                     cell.comment = Comment(ANN[coord], "Ross Wait")
 
-                # Main Headers (Blue background)
-                if any(k in val for k in sec_k) or (ws.title != "Dashboard" and cell.row == 1): cell.font, cell.fill = st_sec
-                # Labels (Bold)
-                elif (cell.column in [1, 4, 9] and cell.row > 1): cell.font = st_lbl
+                # --- Section Header Styling ---
+                is_header = False
+                if ws.title == "Dashboard" and any(k in val for k in sec_k):
+                    is_header = True
+                elif ws.title == "Instructions" and cell.row in [1, 9]:
+                    is_header = True
+                elif ws.title not in ["Dashboard", "Instructions"] and cell.row == 1:
+                    is_header = True
+
+                if is_header:
+                    cell.font, cell.fill = st_sec
+                elif (ws.title == "Dashboard" and cell.column in [1, 4, 9] and cell.row > 1):
+                    cell.font = st_lbl
                 
                 if ws.title == "Dashboard":
                     if coord in in_c or (cell.column in [4,5,6,7] and 3 <= cell.row <= 10): cell.fill = st_in
