@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# MacOS
+.DS_Store
+
+# Excel (Ephemeral outputs)
+# Keep the script as the source of truth, 
+# but if you want to commit the template, remove this.
+# Tax_Orchestrator_Template.xlsx
+# Tax_Orchestrator_Template_Input.xlsx
