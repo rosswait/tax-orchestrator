@@ -146,7 +146,7 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     ws_ds["I25"] = "ACTIVE WARNINGS"
     ws_ds["I26"] = "Stale Snapshots:"; ws_ds["J26"] = "=IF(OR(MAX('Wage Snapshots'!A:A)=0, (B9 - MAX('Wage Snapshots'!A:A)) > 30), \"🔴 !!! 30+ DAYS OLD !!!\", \"OK\")"
     ws_ds["I27"] = "Prior Year Data:"; ws_ds["J27"] = "=IF(B4=0, \"🔴 WARNING: FED MISSING\", \"OK\")"
-    ws_ds["I28"] = "HSA Audit (CA):"; ws_ds["J28"] = "=IF(B20=B19, \"🔴 ERR: HSA NOT ADDED TO CA\", \"✅ HSA Corrected (CA)\")"
+    ws_ds["I28"] = "HSA Verification (CA):"; ws_ds["J28"] = "=IF(SUM('Wage Snapshots'!D:D)=0, \"✅ No HSA Detected\", IF(B20=B19, \"🔴 ERR: HSA NOT ADDED TO CA\", \"✅ HSA Corrected (CA)\"))"
 
     # --- 5. Data & Constants Tabs ---
     ws_inv = wb.create_sheet("Investment Income Snapshots")
@@ -185,7 +185,7 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
         "I21": "The highest tax rate applied to your last dollar of California income.",
         "I26": "Alerts you if your latest snapshot is more than 30 days old. Keeping this current ensures accurately pro-rated future predictions.",
         "I27": "Critical for Safe Harbor targeting. Warns you if your prior-year tax liability is missing from the Configuration section (B4/B5).",
-        "I28": "Confirms that HSA contributions are successfully added back to California income (as they are not deductible at the state level)."
+        "I28": "HSA Verification: Checks that HSA contributions are added back to California income. If you do not have an HSA, this will simply confirm 'No HSA Detected'."
     }
 
     # --- Premium Formatting Engine ---
