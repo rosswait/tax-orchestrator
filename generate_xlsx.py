@@ -166,7 +166,7 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     # --- Extensive Annotations (Refined: No Headers in text) ---
     ANN = {
         "D1": "Record your quarterly estimated tax payments made directly to the IRS or FTB here. This is the primary source of truth for tracking payments made outside of payroll withholding.",
-        "E2": "An automated guide for this deadline based on your current year-to-date data. You can use this as a guide for your payment, or override it by entering your actual payment in the next column.",
+        "E2": "MANUAL ENTRY. This field is NOT auto-populated. It is provided as a convenience for you to manually log what the system recommended at the time of your payment for your records.",
         "F2": "ENTER PAYMENTS HERE. This field is REQUIRED to accurately calculate your 'DUE NOW' totals in the Action Center. This ensures the system recognizes your progress and doesn't double-count required taxes.",
         "G2": "Track payment confirmation numbers, specific quarterly intent, or voucher details here.",
         "B4": "Enter your total tax from last year's Federal Form 1040 (typically Line 24 minus Line 19).",
