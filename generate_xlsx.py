@@ -169,7 +169,7 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     ws_ds["I19"] = "Effective CA Rate:"; ws_ds["J19"] = "=B37 / MAX(1, B23)"
     ws_ds["I20"] = "Marginal Fed Bracket:"; ws_ds["J20"] = "=XLOOKUP(B28, FILTER('Tax Constants'!C3:C30, 'Tax Constants'!B3:B30=B2), FILTER('Tax Constants'!D3:D30, 'Tax Constants'!B3:B30=B2), 0, -1)"
     ws_ds["I21"] = "Marginal CA Bracket:"; ws_ds["J21"] = "=XLOOKUP(B34, FILTER('Tax Constants'!C49:C84, 'Tax Constants'!B49:B84=B2), FILTER('Tax Constants'!D49:D84, 'Tax Constants'!B49:B84=B2), 0, -1)"
-    ws_ds["I22"] = "Deduction Applied:"; ws_ds["J22"] = "=IF(B6>XLOOKUP(B2, 'Tax Constants'!B3:B30, 'Tax Constants'!B3:B30=B2), \"ITEMIZED\", \"STANDARD\")"
+    ws_ds["I22"] = "Deduction Applied:"; ws_ds["J22"] = "=IF(B6>XLOOKUP(B2, 'Tax Constants'!B3:B30, 'Tax Constants'!F3:F30, 0), \"ITEMIZED\", \"STANDARD\")"
     ws_ds["I23"] = "Bracket Year:"; ws_ds["J23"] = LOGIC_YEAR
     
     ws_ds["I25"] = "ACTIVE WARNINGS"
