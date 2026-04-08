@@ -176,8 +176,8 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     ws_ds["I26"] = "Stale Snapshots:"; ws_ds["J26"] = "=IF(OR(MAX('Wage Snapshots'!A:A)=0, (B9 - MAX('Wage Snapshots'!A:A)) > 30), \"🔴 !!! 30+ DAYS OLD !!!\", \"OK\")"
     ws_ds["I27"] = "Prior Year Data:"; ws_ds["J27"] = "=IF(B4=0, \"🔴 WARNING: FED MISSING\", \"OK\")"
     ws_ds["I28"] = "HSA Verification (CA):"; ws_ds["J28"] = "=IF(SUM('Wage Snapshots'!D:D)=0, \"✅ No HSA Detected\", IF(B20=B19, \"🔴 ERR: HSA NOT ADDED TO CA\", \"✅ HSA Corrected (CA)\"))"
-    ws_ds["I29"] = "Fed Brackets Stale:"; ws_ds["J29"] = f"=IF(B8 > J23, \"⚠️ FED STALE ({LOGIC_YEAR} PROXY)\", \"OK\")"
-    ws_ds["I30"] = "CA Brackets Stale:"; ws_ds["J30"] = f"=IF(B8 > J23, \"⚠️ CA STALE ({LOGIC_YEAR} PROXY)\", \"OK\")"
+    ws_ds["I29"] = "Fed Brackets Stale:"; ws_ds["J29"] = f"=IF(B8 > J23, \"⚠️ FED STALE: \"&B8&\" brackets missing, using {LOGIC_YEAR} instead\", \"OK\")"
+    ws_ds["I30"] = "CA Brackets Stale:"; ws_ds["J30"] = f"=IF(B8 > J23, \"⚠️ CA STALE: \"&B8&\" brackets missing, using {LOGIC_YEAR} instead\", \"OK\")"
 
     # --- 5. Data & Constants Tabs ---
     ws_inv = wb.create_sheet("Investment Income Snapshots")
@@ -292,9 +292,9 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
                     
                     if cell.column == 2:
                         if cell.row == 8: cell.number_format = '0'
-                        elif (4 <= cell.row <= 52) or (55 <= cell.row <= 64): cell.number_format = FORMAT_CURRENCY
-                        elif cell.row == 13: cell.number_format = FORMAT_PERCENT
                         elif cell.row == 9: cell.number_format = FORMAT_DATE
+                        elif cell.row == 13: cell.number_format = FORMAT_PERCENT
+                        elif (4 <= cell.row <= 52) or (55 <= cell.row <= 64): cell.number_format = FORMAT_CURRENCY
                     if cell.column == 3 and (55 <= cell.row <= 64): cell.number_format = FORMAT_CURRENCY
                     if cell.column == 10:
                         if cell.row == 23: cell.number_format = '0'
