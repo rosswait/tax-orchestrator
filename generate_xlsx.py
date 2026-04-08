@@ -2,7 +2,7 @@ import argparse
 import openpyxl
 from openpyxl import Workbook
 from openpyxl.worksheet.datavalidation import DataValidation
-from openpyxl.styles import Font, PatternFill, Alignment
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.comments import Comment
 from datetime import datetime
 
@@ -36,17 +36,17 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
 
     # --- 1. Instructions Tab (First) ---
     ws_instr = wb.active; ws_instr.title = "Instructions"
-    ws_instr.append(["Universal Tax Orchestrator - Quick Start Guide"])
+    ws_instr.append(["Quick Start Guide"])
     ws_instr.append([""])
     ws_instr.append(["Step 1: Enter your latest YTD paystub details in the 'Wage Snapshots' tab."])
     ws_instr.append(["Step 2: Enter your latest YTD brokerage totals in 'Investment Income Snapshots'."])
-    ws_instr.append(["Step 3: Enter your 'Prior Year Tax' liability in the Dashboard (Section 1) to enable Safe Harbor targets."])
+    ws_instr.append(["Step 3: Enter your 'Prior Year Tax' liability in the Dashboard to enable Safe Harbor targets."])
     ws_instr.append(["Step 4: Check the 'PAYMENT ACTION CENTER' on the Dashboard for immediate payment requirements."])
     ws_instr.append([""])
-    ws_instr.append(["IMPORTANT NOTES & SIMPLIFICATIONS:"])
+    ws_instr.append(["Important Notes"])
     ws_instr.append(["1. Investment Income: All dividends and interest are combined and taxed as Ordinary Income for a safe, conservative projection."])
     ws_instr.append(["2. HSA (California): HSA contributions are automatically added back to CA state income as they are not deductible in California."])
-    ws_instr.append(["3. Burn Rate Projections: The engine pro-rates your remaining annual income based on the days elapsed between Jan 1 and your latest snapshot date."])
+    ws_instr.append(["3. Income Projections: The engine pro-rates your remaining annual income based on the days elapsed since Jan 1. You can adjust these projections by entering values into 'Manual Income Offset' or 'Future Income Weight' in Section 1.5 of the Dashboard."])
     ws_instr.append(["4. YTD Methodology: Always use Year-to-Date (YTD) totals from your statements. Overwrite existing rows as new statements arrive."])
 
     # --- 2. Dashboard Tab (Second Position) ---
@@ -99,7 +99,7 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     ws_ds["A46"] = "Total Federal Liability"; ws_ds["B46"] = "=B29 + B30 + B41 + B43 - B45"
 
     ws_ds["D1"] = "Estimated Tax Payments Ledger"
-    ws_ds["D2"] = "Date"; ws_ds["E2"] = "Calculated Estimate"; ws_ds["F2"] = "Actual Payment Made"; ws_ds["G2"] = "Note"
+    ws_ds["D2"] = "Date"; ws_ds["E2"] = "Calculated Estimate (Optional)"; ws_ds["F2"] = "Actual Payment Made (Required)"; ws_ds["G2"] = "Note"
     ws_ds["D3"]=f"04/15/{year}"; ws_ds["G3"]="Fed Q1"; ws_ds["D4"]=f"04/15/{year}"; ws_ds["G4"]="CA Q1"
     ws_ds["D5"]=f"06/15/{year}"; ws_ds["G5"]="Fed Q2"; ws_ds["D6"]=f"06/15/{year}"; ws_ds["G6"]="CA Q2"
     ws_ds["D7"]=f"09/15/{year}"; ws_ds["G7"]="Fed Q3"; ws_ds["D8"]=f"09/15/{year}"; ws_ds["G8"]="CA Q3"
@@ -140,8 +140,8 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     ws_ds["I22"] = "Deduction Applied:"; ws_ds["J22"] = "=IF(B6>XLOOKUP(B2, 'Tax Constants'!A3:A30, 'Tax Constants'!E3:E30, 0), \"ITEMIZED\", \"STANDARD\")"
     
     ws_ds["I25"] = "ACTIVE WARNINGS"
-    ws_ds["I26"] = "Stale Snapshots:"; ws_ds["J26"] = "=IF(OR(MAX('Wage Snapshots'!A:A)=0, (B9 - MAX('Wage Snapshots'!A:A)) > 30), \"!!! 30+ DAYS OLD !!!\", \"OK\")"
-    ws_ds["I27"] = "Prior Year Data:"; ws_ds["J27"] = "=IF(B4=0, \"WARNING: FED MISSING\", \"OK\")"
+    ws_ds["I26"] = "Stale Snapshots:"; ws_ds["J26"] = "=IF(OR(MAX('Wage Snapshots'!A:A)=0, (B9 - MAX('Wage Snapshots'!A:A)) > 30), \"🔴 !!! 30+ DAYS OLD !!!\", \"OK\")"
+    ws_ds["I27"] = "Prior Year Data:"; ws_ds["J27"] = "=IF(B4=0, \"🔴 WARNING: FED MISSING\", \"OK\")"
     ws_ds["I28"] = "HSA Audit (CA):"; ws_ds["J28"] = "=IF(B20=B19, \"🔴 ERR: HSA NOT ADDED TO CA\", \"✅ HSA Corrected (CA)\")"
 
     # --- 5. Data & Constants Tabs ---
@@ -150,49 +150,56 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     ws_wage = wb.create_sheet("Wage Snapshots")
     ws_wage.append(["Date", "Gross W-2 Income", "Pre-tax Deductions", "HSA Contributions", "Fed Tax Withheld", "CA Tax Withheld", "FICA/Med/SDI"])
     ws_const = wb.create_sheet("Tax Constants")
-    ws_const.append([f"Table A: Federal Brackets (Ordinary Income - {year})"])
+    ws_const.append(["Table A: Federal Brackets (Ordinary Income)"])
     ws_const.append(["Status", "Bracket Floor", "Base Tax", "Marginal Rate", "Standard Deduction"])
     for row in fed_ord_brackets: ws_const.append(row)
-    ws_const.append([]); ws_const.append([f"Table B: Federal Capital Gains Brackets ({year})"])
+    ws_const.append([]); ws_const.append(["Table B: Federal Capital Gains Brackets"])
     ws_const.append(["Status", "Bracket Floor", "LTCG Rate"])
     for row in fed_cg_brackets: ws_const.append(row)
-    ws_const.append([]); ws_const.append([f"Table C: California FTB Brackets ({year})"])
+    ws_const.append([]); ws_const.append(["Table C: California FTB Brackets"])
     ws_const.append(["Status", "Bracket Floor", "Base Tax", "Marginal Rate", "Standard Deduction", "MH Surcharge Floor"])
     for row in ca_brackets: ws_const.append(row)
     ws_const.append([]); ws_const.append(["Table D: Surtaxes & Phaseouts"])
     ws_const.append(["Status", "NIIT Threshold", "Addl Medicare", "CTC Phaseout Start"])
     for row in surtaxes: ws_const.append(row)
 
-    # --- Extensive Annotations ---
+    # --- Extensive Annotations (Refined: No Headers in text) ---
     ANN = {
-        "D1": "Estimated Tax Payments Ledger: Record all tax payments made OUTSIDE of your W-2 withholding here. This is the source of truth for clearing shortfalls in the Action Center.",
-        "E2": "Calculated Estimate: The target amount recommended by the orchestrator based on pro-rated future projections.",
-        "F2": "Actual Payment Made: IMPORTANT: Enter the actual dollar amount sent to the IRS/FTB. This value is subtracted from your 'DUE NOW' totals.",
-        "G2": "Note: Use this to track voucher numbers, payment confirmation IDs, or intended quarters.",
-        "B4": "Safe Harbor (Fed): Enter your total tax from last year's Form 1040 (Line 24 minus Line 19).",
-        "B5": "Safe Harbor (CA): Enter your total tax from last year's Form 540.",
-        "B12": "Manual Offset: Adjust total income for one-off events (bonuses, sabbaticals) that aren't recurring in your snapshots.",
-        "B13": "Weight: 1.0 = normal. < 1.0 reduces projected future income. > 1.0 increases it.",
-        "I15": "Diagnostics: A real-time verification of your tax health. Check effective rates to see your blended tax burden.",
-        "I18": "Effective Fed Rate: Total projected Federal Tax divided by Federal AGI. (Standardized against Fed AGI for comparability).",
-        "I19": "Effective CA Rate: Total projected California Tax divided by Federal AGI. (Standardized against Fed AGI for comparability).",
-        "I28": "HSA Audit: Ensures HSA contributions are effectively added back to California income (as they are not state-level deductions)."
+        "D1": "Record your quarterly estimated tax payments made directly to the IRS or FTB here. This is the primary source of truth for tracking payments made outside of payroll withholding.",
+        "E2": "An automated guide for this deadline based on your current year-to-date data. You can use this as a guide for your payment, or override it by entering your actual payment in the next column.",
+        "F2": "ENTER PAYMENTS HERE. This field is REQUIRED to accurately calculate your 'DUE NOW' totals in the Action Center. This ensures the system recognizes your progress and doesn't double-count required taxes.",
+        "G2": "Track payment confirmation numbers, specific quarterly intent, or voucher details here.",
+        "B4": "Enter your total tax from last year's Federal Form 1040 (typically Line 24 minus Line 19).",
+        "B5": "Enter your total tax from last year's California Form 540.",
+        "B12": "Adjust total income for one-off events like bonuses or unpaid leave that aren't recurring in your payroll snapshots.",
+        "B13": "1.0 = normal earnings. Use < 1.0 if you expect to stop working. Use > 1.0 if you expect a year-end windfall.",
+        "I1": "The high-visibility focal point for immediate tax obligations. Values here update automatically based on today's date and your entered payments.",
+        "I15": "A real-time health check on your tax situation. Verify your Effective Rates and Brackets to ensure the model matches your expectations.",
+        "I16": "Specifies if the system is currently targeting 110% of last year's tax (Safe Harbor) or 90% of your current forecast (Forecast), prioritizing the lower baseline for your safety.",
+        "I18": "Total projected Federal Tax divided by Federal AGI. (Standardized against Federal AGI for comparability).",
+        "I19": "Total projected California Tax divided by Federal AGI. (Standardized against Federal AGI for comparability).",
+        "I21": "The highest tax rate applied to your last dollar of California income.",
+        "I28": "Confirms that HSA contributions are successfully added back to California income (as they are not deductible at the state level)."
     }
 
     # --- Premium Formatting Engine ---
     st_sec = (Font(bold=True, size=11, color="FFFFFF"), PatternFill(start_color="2F75B5", end_color="2F75B5", fill_type="solid"))
     st_lbl = Font(bold=True); st_in = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid")
+    st_ac_bg = PatternFill(start_color="DDEBF7", end_color="DDEBF7", fill_type="solid")
     st_crit = Font(bold=True, color="FF0000"); st_calc = Font(bold=True)
-    sec_k = ["Configuration", "Assumptions", "Projection", "Calculation", "Requirements", "Ledger", "SCHEDULE", "CENTER", "DIAGNOSTICS", "WARNINGS"]
+    
+    side = Side(border_style="thin", color="000000")
+    st_border = Border(top=side, left=side, right=side, bottom=side)
+    
+    sec_k = ["Configuration", "Notes", "Quick Start", "Assumptions", "Projection", "Calculation", "Requirements", "Ledger", "SCHEDULE", "CENTER", "DIAGNOSTICS", "WARNINGS"]
     in_c = ["B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9", "B12", "B13", "B14", "B15"]
 
     for ws in wb.worksheets:
         for row in ws.iter_rows():
             for cell in row:
-                coord = cell.coordinate
-                val = str(cell.value)
+                coord = cell.coordinate; val = str(cell.value)
                 
-                # Apply Comments
+                # Apply Comments (Refined)
                 if ws.title == "Dashboard" and coord in ANN:
                     cell.comment = Comment(ANN[coord], "Ross Wait")
 
@@ -202,8 +209,14 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
                 elif (cell.column in [1, 4, 9] and cell.row > 1): cell.font = st_lbl
                 
                 if ws.title == "Dashboard":
-                    if cell.coordinate in in_c or (cell.column in [4,5,6,7] and 3 <= cell.row <= 10): cell.fill = st_in
+                    if coord in in_c or (cell.column in [4,5,6,7] and 3 <= cell.row <= 10): cell.fill = st_in
                     if cell.column in [5, 6, 7] and 2 <= cell.row <= 10: cell.font = st_calc
+                    
+                    # Action Center Style (Border + Background)
+                    if (9 <= cell.column <= 10 and 1 <= cell.row <= 13):
+                        cell.fill = st_ac_bg
+                        cell.border = st_border
+                    
                     if cell.coordinate in ["I2", "J2", "I8", "J8"]: cell.font = st_crit
                     
                     if cell.column == 2:
