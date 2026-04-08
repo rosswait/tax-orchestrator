@@ -78,24 +78,24 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     ws_ds["A24"] = "Total Projected CA AGI"; ws_ds["B24"] = "=B20 + B21 + B22"
 
     ws_ds["A26"] = "Federal Tax Calculation"
-    ws_ds["A27"] = "Deduction Applied (Max Std/Item)"; ws_ds["B27"] = "=MAX(XLOOKUP(B2, 'Tax Constants'!A3:A30, 'Tax Constants'!E3:E30, 0), B6)"
+    ws_ds["A27"] = "Deduction Applied (Max Std/Item)"; ws_ds["B27"] = "=MAX(XLOOKUP(B2, 'Tax Constants'!B3:B30, 'Tax Constants'!F3:F30, 0), B6)"
     ws_ds["A28"] = "Ordinary Taxable Income"; ws_ds["B28"] = "=MAX(0, B23 - B27 - B22)"
-    ws_ds["A29"] = "Ordinary Income Tax"; ws_ds["B29"] = "=XLOOKUP(B28, FILTER('Tax Constants'!B3:B30, 'Tax Constants'!A3:A30=B2), FILTER('Tax Constants'!C3:C30, 'Tax Constants'!A3:A30=B2), 0, -1) + (B28 - XLOOKUP(B28, FILTER('Tax Constants'!B3:B30, 'Tax Constants'!A3:A30=B2), FILTER('Tax Constants'!B3:B30, 'Tax Constants'!A3:A30=B2), 0, -1)) * XLOOKUP(B28, FILTER('Tax Constants'!B3:B30, 'Tax Constants'!A3:A30=B2), FILTER('Tax Constants'!D3:D30, 'Tax Constants'!A3:A30=B2), 0, -1)"
-    ws_ds["A30"] = "Capital Gains Tax"; ws_ds["B30"] = "=IF(B22>0, B22 * XLOOKUP(B28+B22, FILTER('Tax Constants'!B34:B45, 'Tax Constants'!A34:A45=B2), FILTER('Tax Constants'!C34:C45, 'Tax Constants'!A34:A45=B2), 0, -1), 0)"
+    ws_ds["A29"] = "Ordinary Income Tax"; ws_ds["B29"] = "=XLOOKUP(B28, FILTER('Tax Constants'!C3:C30, 'Tax Constants'!B3:B30=B2), FILTER('Tax Constants'!D3:D30, 'Tax Constants'!B3:B30=B2), 0, -1) + (B28 - XLOOKUP(B28, FILTER('Tax Constants'!C3:C30, 'Tax Constants'!B3:B30=B2), FILTER('Tax Constants'!C3:C30, 'Tax Constants'!B3:B30=B2), 0, -1)) * XLOOKUP(B28, FILTER('Tax Constants'!C3:C30, 'Tax Constants'!B3:B30=B2), FILTER('Tax Constants'!E3:E30, 'Tax Constants'!B3:B30=B2), 0, -1)"
+    ws_ds["A30"] = "Capital Gains Tax"; ws_ds["B30"] = "=IF(B22>0, B22 * XLOOKUP(B28+B22, FILTER('Tax Constants'!C34:C45, 'Tax Constants'!B34:B45=B2), FILTER('Tax Constants'!D34:D45, 'Tax Constants'!B34:B45=B2), 0, -1), 0)"
 
     ws_ds["A32"] = "CA Tax Calculation"
-    ws_ds["A33"] = "CA Deduction Applied"; ws_ds["B33"] = "=MAX(XLOOKUP(B2, 'Tax Constants'!A49:A84, 'Tax Constants'!E49:E84, 0), B7)"
+    ws_ds["A33"] = "CA Deduction Applied"; ws_ds["B33"] = "=MAX(XLOOKUP(B2, 'Tax Constants'!B49:B84, 'Tax Constants'!F49:F84, 0), B7)"
     ws_ds["A34"] = "CA Taxable Income"; ws_ds["B34"] = "=MAX(0, B24 - B33)"
-    ws_ds["A35"] = "CA Regular Tax"; ws_ds["B35"] = "=XLOOKUP(B34, FILTER('Tax Constants'!B49:B84, 'Tax Constants'!A49:A84=B2), FILTER('Tax Constants'!C49:C84, 'Tax Constants'!A49:A84=B2), 0, -1) + (B34 - XLOOKUP(B34, FILTER('Tax Constants'!B49:B84, 'Tax Constants'!A49:A84=B2), FILTER('Tax Constants'!B49:B84, 'Tax Constants'!A49:A84=B2), 0, -1)) * XLOOKUP(B34, FILTER('Tax Constants'!B49:B84, 'Tax Constants'!A49:A84=B2), FILTER('Tax Constants'!D49:D84, 'Tax Constants'!A49:A84=B2), 0, -1)"
+    ws_ds["A35"] = "CA Regular Tax"; ws_ds["B35"] = "=XLOOKUP(B34, FILTER('Tax Constants'!C49:C84, 'Tax Constants'!B49:B84=B2), FILTER('Tax Constants'!D49:D84, 'Tax Constants'!B49:B84=B2), 0, -1) + (B34 - XLOOKUP(B34, FILTER('Tax Constants'!C49:C84, 'Tax Constants'!B49:B84=B2), FILTER('Tax Constants'!C49:C84, 'Tax Constants'!B49:B84=B2), 0, -1)) * XLOOKUP(B34, FILTER('Tax Constants'!C49:C84, 'Tax Constants'!B49:B84=B2), FILTER('Tax Constants'!E49:E84, 'Tax Constants'!B49:B84=B2), 0, -1)"
     ws_ds["A36"] = "CA MH Surcharge (1%)"; ws_ds["B36"] = "=IF(B34 > 1000000, (B34 - 1000000) * 0.01, 0)"
     ws_ds["A37"] = "Total CA Liability"; ws_ds["B37"] = "=B35 + B36"
 
     ws_ds["A39"] = "Final Liability & Surtaxes"
-    ws_ds["A40"] = "NIIT Threshold"; ws_ds["B40"] = "=XLOOKUP(B2, 'Tax Constants'!A88:A91, 'Tax Constants'!B88:B91, 200000)"
+    ws_ds["A40"] = "NIIT Threshold"; ws_ds["B40"] = "=XLOOKUP(B2, 'Tax Constants'!B88:B91, 'Tax Constants'!C88:C91, 200000)"
     ws_ds["A41"] = "NIIT (Fed)"; ws_ds["B41"] = "=IF(B23 > B40, 0.038 * MIN(B23-B40, B21+B22), 0)"
-    ws_ds["A42"] = "Addl Medicare Threshold"; ws_ds["B42"] = "=XLOOKUP(B2, 'Tax Constants'!A88:A91, 'Tax Constants'!C88:C91, 200000)"
+    ws_ds["A42"] = "Addl Medicare Threshold"; ws_ds["B42"] = "=XLOOKUP(B2, 'Tax Constants'!B88:B91, 'Tax Constants'!D88:D91, 200000)"
     ws_ds["A43"] = "Addl Medicare (Fed)"; ws_ds["B43"] = "=IF(B18 > B42, 0.009 * (B18-B42), 0)"
-    ws_ds["A44"] = "CTC Phaseout Start"; ws_ds["B44"] = "=XLOOKUP(B2, 'Tax Constants'!A88:A91, 'Tax Constants'!D88:D91, 200000)"
+    ws_ds["A44"] = "CTC Phaseout Start"; ws_ds["B44"] = "=XLOOKUP(B2, 'Tax Constants'!B88:B91, 'Tax Constants'!E88:E91, 200000)"
     ws_ds["A45"] = "Child Tax Credit"; ws_ds["B45"] = "=IF(B23 > B44, MAX(0, (B3*2000)-((B23-B44)/1000)*50), B3*2000)"
     ws_ds["A46"] = "Total Federal Liability"; ws_ds["B46"] = "=B29 + B30 + B41 + B43 - B45"
 
@@ -143,8 +143,9 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     ws_ds["I18"] = "Effective Fed Rate:"; ws_ds["J18"] = "=B46 / MAX(1, B23)"
     ws_ds["I19"] = "Effective CA Rate:"; ws_ds["J19"] = "=B37 / MAX(1, B23)"
     ws_ds["I20"] = "Marginal Fed Bracket:"; ws_ds["J20"] = "=XLOOKUP(B28, FILTER('Tax Constants'!B3:B30, 'Tax Constants'!A3:A30=B2), FILTER('Tax Constants'!D3:D30, 'Tax Constants'!A3:A30=B2), 0, -1)"
-    ws_ds["I21"] = "Marginal CA Bracket:"; ws_ds["J21"] = "=XLOOKUP(B34, FILTER('Tax Constants'!B49:B84, 'Tax Constants'!A49:A84=B2), FILTER('Tax Constants'!D49:D84, 'Tax Constants'!A49:A84=B2), 0, -1)"
-    ws_ds["I22"] = "Deduction Applied:"; ws_ds["J22"] = "=IF(B6>XLOOKUP(B2, 'Tax Constants'!A3:A30, 'Tax Constants'!E3:E30, 0), \"ITEMIZED\", \"STANDARD\")"
+    ws_ds["I21"] = "Marginal CA Bracket:"; ws_ds["J21"] = "=XLOOKUP(B34, FILTER('Tax Constants'!C49:C84, 'Tax Constants'!B49:B84=B2), FILTER('Tax Constants'!E49:E84, 'Tax Constants'!B49:B84=B2), 0, -1)"
+    ws_ds["I22"] = "Deduction Applied:"; ws_ds["J22"] = "=IF(B6>XLOOKUP(B2, 'Tax Constants'!B3:B30, 'Tax Constants'!B3:B30=B2), \"ITEMIZED\", \"STANDARD\")"
+    ws_ds["I23"] = "Bracket Year:"; ws_ds["J23"] = "=B8"
     
     ws_ds["I25"] = "ACTIVE WARNINGS"
     ws_ds["I26"] = "Stale Snapshots:"; ws_ds["J26"] = "=IF(OR(MAX('Wage Snapshots'!A:A)=0, (B9 - MAX('Wage Snapshots'!A:A)) > 30), \"🔴 !!! 30+ DAYS OLD !!!\", \"OK\")"
@@ -158,17 +159,17 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     ws_wage.append(["Date", "Gross W-2 Income", "Pre-tax Deductions", "HSA Contributions", "Fed Tax Withheld", "CA Tax Withheld", "FICA/Med/SDI"])
     ws_const = wb.create_sheet("Tax Constants")
     ws_const.append(["Table A: Federal Brackets (Ordinary Income)"])
-    ws_const.append(["Status", "Bracket Floor", "Base Tax", "Marginal Rate", "Standard Deduction"])
-    for row in fed_ord_brackets: ws_const.append(row)
+    ws_const.append(["Year", "Status", "Bracket Floor", "Base Tax", "Marginal Rate", "Standard Deduction"])
+    for row in fed_ord_brackets: ws_const.append([year] + row)
     ws_const.append([]); ws_const.append(["Table B: Federal Capital Gains Brackets"])
-    ws_const.append(["Status", "Bracket Floor", "LTCG Rate"])
-    for row in fed_cg_brackets: ws_const.append(row)
+    ws_const.append(["Year", "Status", "Bracket Floor", "LTCG Rate"])
+    for row in fed_cg_brackets: ws_const.append([year] + row)
     ws_const.append([]); ws_const.append(["Table C: California FTB Brackets"])
-    ws_const.append(["Status", "Bracket Floor", "Base Tax", "Marginal Rate", "Standard Deduction", "MH Surcharge Floor"])
-    for row in ca_brackets: ws_const.append(row)
+    ws_const.append(["Year", "Status", "Bracket Floor", "Base Tax", "Marginal Rate", "Standard Deduction", "MH Surcharge Floor"])
+    for row in ca_brackets: ws_const.append([year] + row)
     ws_const.append([]); ws_const.append(["Table D: Surtaxes & Phaseouts"])
-    ws_const.append(["Status", "NIIT Threshold", "Addl Medicare", "CTC Phaseout Start"])
-    for row in surtaxes: ws_const.append(row)
+    ws_const.append(["Year", "Status", "NIIT Threshold", "Addl Medicare", "CTC Phaseout Start"])
+    for row in surtaxes: ws_const.append([year] + row)
 
     # --- 6. AI Instructions Tab (New / Last) ---
     ws_ai = wb.create_sheet("AI Parsing Instructions")
@@ -200,6 +201,7 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
         "I18": "Total projected Federal Tax divided by Federal AGI. (Standardized against Federal AGI for comparability).",
         "I19": "Total projected California Tax divided by Federal AGI. (Standardized against Federal AGI for comparability).",
         "I21": "The highest tax rate applied to your last dollar of California income.",
+        "I23": "Confirms which year's tax brackets are being applied by the simulation. All logic in this sheet pivots off this value.",
         "I28": "HSA Verification: Checks that HSA contributions are added back to California income. If you do not have an HSA, this will simply confirm 'No HSA Detected'."
     }
 
