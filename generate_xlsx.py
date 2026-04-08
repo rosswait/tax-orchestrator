@@ -3,6 +3,7 @@ import openpyxl
 from openpyxl import Workbook
 from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.styles import Font, PatternFill, Alignment
+from openpyxl.comments import Comment
 from datetime import datetime
 
 def create_tax_workbook(status="Single", dependents=0, year=2026):
@@ -162,6 +163,22 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     ws_const.append(["Status", "NIIT Threshold", "Addl Medicare", "CTC Phaseout Start"])
     for row in surtaxes: ws_const.append(row)
 
+    # --- Extensive Annotations ---
+    ANN = {
+        "D1": "Estimated Tax Payments Ledger: Record all tax payments made OUTSIDE of your W-2 withholding here. This is the source of truth for clearing shortfalls in the Action Center.",
+        "E2": "Calculated Estimate: The target amount recommended by the orchestrator based on pro-rated future projections.",
+        "F2": "Actual Payment Made: IMPORTANT: Enter the actual dollar amount sent to the IRS/FTB. This value is subtracted from your 'DUE NOW' totals.",
+        "G2": "Note: Use this to track voucher numbers, payment confirmation IDs, or intended quarters.",
+        "B4": "Safe Harbor (Fed): Enter your total tax from last year's Form 1040 (Line 24 minus Line 19).",
+        "B5": "Safe Harbor (CA): Enter your total tax from last year's Form 540.",
+        "B12": "Manual Offset: Adjust total income for one-off events (bonuses, sabbaticals) that aren't recurring in your snapshots.",
+        "B13": "Weight: 1.0 = normal. < 1.0 reduces projected future income. > 1.0 increases it.",
+        "I15": "Diagnostics: A real-time verification of your tax health. Check effective rates to see your blended tax burden.",
+        "I18": "Effective Fed Rate: Total projected Federal Tax divided by Federal AGI. (Standardized against Fed AGI for comparability).",
+        "I19": "Effective CA Rate: Total projected California Tax divided by Federal AGI. (Standardized against Fed AGI for comparability).",
+        "I28": "HSA Audit: Ensures HSA contributions are effectively added back to California income (as they are not state-level deductions)."
+    }
+
     # --- Premium Formatting Engine ---
     st_sec = (Font(bold=True, size=11, color="FFFFFF"), PatternFill(start_color="2F75B5", end_color="2F75B5", fill_type="solid"))
     st_lbl = Font(bold=True); st_in = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid")
@@ -172,13 +189,23 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     for ws in wb.worksheets:
         for row in ws.iter_rows():
             for cell in row:
+                coord = cell.coordinate
                 val = str(cell.value)
+                
+                # Apply Comments
+                if ws.title == "Dashboard" and coord in ANN:
+                    cell.comment = Comment(ANN[coord], "Ross Wait")
+
+                # Main Headers (Blue background)
                 if any(k in val for k in sec_k) or (ws.title != "Dashboard" and cell.row == 1): cell.font, cell.fill = st_sec
+                # Labels (Bold)
                 elif (cell.column in [1, 4, 9] and cell.row > 1): cell.font = st_lbl
+                
                 if ws.title == "Dashboard":
                     if cell.coordinate in in_c or (cell.column in [4,5,6,7] and 3 <= cell.row <= 10): cell.fill = st_in
                     if cell.column in [5, 6, 7] and 2 <= cell.row <= 10: cell.font = st_calc
                     if cell.coordinate in ["I2", "J2", "I8", "J8"]: cell.font = st_crit
+                    
                     if cell.column == 2:
                         if cell.row in [4,5,6,7,12,14,15,18,19,20,21,22,23,24,27,28,29,30,33,34,35,36,37,40,41,42,43,44,45,46,49,50,51,52]: cell.number_format = FORMAT_CURRENCY
                         elif cell.row == 13: cell.number_format = FORMAT_PERCENT
@@ -192,6 +219,7 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
                 elif ws.title in ["Wage Snapshots", "Investment Income Snapshots"] and cell.row > 1:
                     if ws.title == "Wage Snapshots" and cell.column == 1: cell.number_format = FORMAT_DATE
                     else: cell.number_format = FORMAT_CURRENCY
+        # Column Widths
         for col in ws.columns:
             l = max([len(str(c.value)) for c in col if c.value and not str(c.value).startswith('=')] + [10])
             ws.column_dimensions[col[0].column_letter].width = min(l + 2, 28)
