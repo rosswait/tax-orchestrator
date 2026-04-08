@@ -189,6 +189,7 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
         "G2": "Track payment confirmation numbers, specific quarterly intent, or voucher details here.",
         "B4": "Enter your total tax from last year's Federal Form 1040 (typically Line 24 minus Line 19).",
         "B5": "Enter your total tax from last year's California Form 540.",
+        "B9": "The baseline date used to calculate your current 'Due Now' amounts and deadlines. Defaults to =TODAY(), but you can manually override it to simulate your tax position at a future or past date.",
         "B12": "Manual Offset: Adjust total income for one-off events like bonuses or unpaid leave that aren't recurring in your payroll snapshots.",
         "B13": "1.0 = normal earnings. Use < 1.0 if you expect to stop working. Use > 1.0 if you expect a year-end windfall.",
         "I1": "The high-visibility focal point for immediate tax obligations. Values here update automatically based on today's date and your entered payments.",
