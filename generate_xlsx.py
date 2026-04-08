@@ -179,6 +179,8 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
         "I18": "Total projected Federal Tax divided by Federal AGI. (Standardized against Federal AGI for comparability).",
         "I19": "Total projected California Tax divided by Federal AGI. (Standardized against Federal AGI for comparability).",
         "I21": "The highest tax rate applied to your last dollar of California income.",
+        "I26": "Alerts you if your latest snapshot is more than 30 days old. Keeping this current ensures accurately pro-rated future predictions.",
+        "I27": "Critical for Safe Harbor targeting. Warns you if your prior-year tax liability is missing from the Configuration section (B4/B5).",
         "I28": "Confirms that HSA contributions are successfully added back to California income (as they are not deductible at the state level)."
     }
 
