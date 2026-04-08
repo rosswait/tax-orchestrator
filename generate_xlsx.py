@@ -6,6 +6,38 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.comments import Comment
 from datetime import datetime
 import os
+import json
+
+def load_constants(target_year):
+    """
+    Search for tax constants in the constants/ directory.
+    Uses the specified target_year if it exists, otherwise falls back to the highest available year.
+    Returns (data_dict, logic_year)
+    """
+    base_dir = "constants"
+    if not os.path.exists(base_dir):
+        raise FileNotFoundError(f"Directory '{base_dir}' not found. Please ensure tax constants are present.")
+    
+    available_years = sorted([int(d) for d in os.listdir(base_dir) if d.isdigit()], reverse=True)
+    if not available_years:
+        raise FileNotFoundError("No year directories found in 'constants/'.")
+    
+    logic_year = target_year if target_year in available_years else available_years[0]
+    data_path = os.path.join(base_dir, str(logic_year))
+    
+    files = {
+        "fed_ord": "federal_ord.json",
+        "fed_cg": "federal_cg.json",
+        "ca": "ca_brackets.json",
+        "surtaxes": "surtaxes.json"
+    }
+    
+    data = {}
+    for key, filename in files.items():
+        with open(os.path.join(data_path, filename), "r") as f:
+            data[key] = json.load(f)
+            
+    return data, logic_year
 
 def create_tax_workbook(status="Single", dependents=0, year=2026):
     wb = Workbook()
@@ -15,26 +47,16 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     FORMAT_DATE = 'mm/dd/yyyy'
     FORMAT_PERCENT = '0.00%'
 
-    # --- 0. Shared Tax Logic Constants ---
-    LOGIC_YEAR = 2025
-    fed_ord_brackets = [
-        ["Single", 0, 0, 0.10, 15000], ["Single", 11925, 1192.50, 0.12, 15000], ["Single", 48475, 5578.50, 0.22, 15000], ["Single", 103350, 17651, 0.24, 15000], ["Single", 197300, 40199, 0.32, 15000], ["Single", 250525, 57231, 0.35, 15000], ["Single", 626350, 188770, 0.37, 15000],
-        ["MFJ", 0, 0, 0.10, 30000], ["MFJ", 23850, 2385, 0.12, 30000], ["MFJ", 96950, 11157, 0.22, 30000], ["MFJ", 206700, 35302, 0.24, 30000], ["MFJ", 394600, 80398, 0.32, 30000], ["MFJ", 501050, 114462, 0.35, 30000], ["MFJ", 751600, 202154.50, 0.37, 30000],
-        ["MFS", 0, 0, 0.10, 15000], ["MFS", 11925, 1192.50, 0.12, 15000], ["MFS", 48475, 5578.50, 0.22, 15000], ["MFS", 103350, 17651, 0.24, 15000], ["MFS", 197300, 40199, 0.32, 15000], ["MFS", 250525, 57231, 0.35, 15000], ["MFS", 375800, 101077.25, 0.37, 15000],
-        ["HoH", 0, 0, 0.10, 22500], ["HoH", 17000, 1700, 0.12, 22500], ["HoH", 64850, 7442, 0.22, 22500], ["HoH", 103350, 15912, 0.24, 22500], ["HoH", 197300, 38460, 0.32, 22500], ["HoH", 250500, 55484, 0.35, 22500], ["HoH", 626350, 187031.50, 0.37, 22500]
-    ]
-    fed_cg_brackets = [
-        ["Single", 0, 0.0], ["Single", 47025, 0.15], ["Single", 518900, 0.20],
-        ["MFJ", 0, 0.0], ["MFJ", 96700, 0.15], ["MFJ", 600050, 0.20],
-        ["MFS", 0, 0.0], ["MFS", 48350, 0.15], ["MFS", 300000, 0.20],
-        ["HoH", 0, 0.0], ["HoH", 64750, 0.15], ["HoH", 566700, 0.20]
-    ]
-    ca_brackets = [
-        ["Single", 0, 0, 0.01, 5706, 1000000], ["Single", 11079, 110.79, 0.02, 5706, 1000000], ["Single", 26264, 414.49, 0.04, 5706, 1000000], ["Single", 41452, 1022.01, 0.06, 5706, 1000000], ["Single", 57542, 1987.41, 0.08, 5706, 1000000], ["Single", 72724, 3201.97, 0.093, 5706, 1000000], ["Single", 371479, 31036.19, 0.103, 5706, 1000000], ["Single", 445771, 38688.19, 0.113, 5706, 1000000], ["Single", 742953, 72269.75, 0.123, 5706, 1000000],
-        ["MFJ", 0, 0, 0.01, 11412, 1000000], ["MFJ", 22158, 221.58, 0.02, 11412, 1000000], ["MFJ", 52528, 828.98, 0.04, 11412, 1000000], ["MFJ", 82904, 2044.02, 0.06, 11412, 1000000], ["MFJ", 115084, 3974.82, 0.08, 11412, 1000000], ["MFJ", 145448, 6403.94, 0.093, 11412, 1000000], ["MFJ", 742958, 61972.37, 0.103, 11412, 1000000], ["MFJ", 891542, 77276.52, 0.113, 11412, 1000000], ["MFJ", 1485906, 144439.65, 0.123, 11412, 1000000],
-        ["HoH", 0, 0, 0.01, 11412, 1000000], ["HoH", 22173, 221.73, 0.02, 11412, 1000000], ["HoH", 52530, 828.87, 0.04, 11412, 1000000], ["HoH", 67716, 1436.31, 0.06, 11412, 1000000], ["HoH", 83804, 2401.59, 0.08, 11412, 1000000], ["HoH", 98990, 3616.47, 0.093, 11412, 1000000], ["HoH", 505208, 41394.74, 0.103, 11412, 1000000], ["HoH", 606251, 51802.17, 0.113, 11412, 1000000], ["HoH", 1010417, 97472.93, 0.123, 11412, 1000000]
-    ]
-    surtaxes = [["Single", 200000, 200000, 200000], ["MFJ", 250000, 250000, 400000], ["MFS", 125000, 125000, 200000], ["HoH", 200000, 200000, 200000]]
+    # --- 0. Load Tax Logic Constants ---
+    try:
+        constants, LOGIC_YEAR = load_constants(year)
+        fed_ord_brackets = constants["fed_ord"]
+        fed_cg_brackets = constants["fed_cg"]
+        ca_brackets = constants["ca"]
+        surtaxes = constants["surtaxes"]
+    except Exception as e:
+        print(f"Error loading constants: {e}")
+        return
 
     # --- 1. Instructions Tab (First) ---
     ws_instr = wb.active; ws_instr.title = "Instructions"
@@ -154,7 +176,8 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     ws_ds["I26"] = "Stale Snapshots:"; ws_ds["J26"] = "=IF(OR(MAX('Wage Snapshots'!A:A)=0, (B9 - MAX('Wage Snapshots'!A:A)) > 30), \"🔴 !!! 30+ DAYS OLD !!!\", \"OK\")"
     ws_ds["I27"] = "Prior Year Data:"; ws_ds["J27"] = "=IF(B4=0, \"🔴 WARNING: FED MISSING\", \"OK\")"
     ws_ds["I28"] = "HSA Verification (CA):"; ws_ds["J28"] = "=IF(SUM('Wage Snapshots'!D:D)=0, \"✅ No HSA Detected\", IF(B20=B19, \"🔴 ERR: HSA NOT ADDED TO CA\", \"✅ HSA Corrected (CA)\"))"
-    ws_ds["I29"] = "Bracket Staleness:"; ws_ds["J29"] = f"=IF(B8 > J23, \"⚠️ BRACKETS STALE (USING {LOGIC_YEAR} PROXY)\", \"OK\")"
+    ws_ds["I29"] = "Fed Brackets Stale:"; ws_ds["J29"] = f"=IF(B8 > J23, \"⚠️ FED STALE ({LOGIC_YEAR} PROXY)\", \"OK\")"
+    ws_ds["I30"] = "CA Brackets Stale:"; ws_ds["J30"] = f"=IF(B8 > J23, \"⚠️ CA STALE ({LOGIC_YEAR} PROXY)\", \"OK\")"
 
     # --- 5. Data & Constants Tabs ---
     ws_inv = wb.create_sheet("Investment Income Snapshots")
@@ -207,7 +230,8 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
         "I21": "The highest tax rate applied to your last dollar of California income.",
         "I23": "Confirms which year's tax brackets are being applied by the simulation. All logic in this sheet pivots off this value.",
         "I28": "HSA Verification: Checks that HSA contributions are added back to California income. If you do not have an HSA, this will simply confirm 'No HSA Detected'.",
-        "I29": "Occurs when your Status Date is set to a tax year for which new brackets have not yet been released. Using the previous year's brackets is a safe, conservative proxy that slightly overstates liability (as it ignores inflation-based bracket growth)."
+        "I29": "Occurs when the simulator uses Federal tax logic from a previous year as a conservative proxy while waiting for new year bracket releases.",
+        "I30": "Occurs when the simulator uses California tax logic from a previous year as a conservative proxy. CA brackets are often finalized mid-year."
     }
 
     # --- Premium Formatting Engine ---
@@ -257,9 +281,6 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
                     if coord in in_c or (cell.column in [4,5,6,7] and 3 <= cell.row <= 10): cell.fill = st_in
                     if cell.column in [5, 6, 7] and 2 <= cell.row <= 10: cell.font = st_calc
                     
-                    # Highlight J29 if stale
-                    if coord == "J29": cell.fill = st_in
-
                     # Action Center Style (Background only for data rows, no border)
                     if (9 <= cell.column <= 10 and 1 <= cell.row <= 13):
                         if cell.row == 1:
@@ -290,7 +311,7 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
             ws.column_dimensions[col[0].column_letter].width = min(l + 2, 28)
 
     wb.save("Estimated_Tax_Calculator_Template.xlsx")
-    print(f"Workbook polished and generated successfully.")
+    print(f"Workbook polished and generated successfully using {LOGIC_YEAR} constants.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(); parser.add_argument("--status", default="Single"); parser.add_argument("--dependents", type=int, default=0); parser.add_argument("--year", type=int, default=datetime.now().year)
