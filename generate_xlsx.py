@@ -111,15 +111,17 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     ws_ds["A50"] = "Total Fed Payments YTD"; ws_ds["B50"] = "=SUM('Wage Snapshots'!E:E) + SUMIFS(F3:F10, G3:G10, \"Fed*\")"
     ws_ds["A51"] = "CA Target"; ws_ds["B51"] = "=IF(B5=0, B37 * 0.8, MIN(B37 * 0.8, B5 * 1.1))"
     ws_ds["A52"] = "Total CA Payments YTD"; ws_ds["B52"] = "=SUM('Wage Snapshots'!F:F) + SUMIFS(F3:F10, G3:G10, \"CA*\")"
-
-    # --- Data Validation (Restored) ---
-    dv_status = DataValidation(type="list", formula1='"Single,MFJ,MFS,HoH"', showErrorMessage=True)
-    ws_ds.add_data_validation(dv_status); dv_status.add(ws_ds["B2"])
-
+    
+    ws_ds["A54"] = "FEDERAL PAYMENT SCHEDULE"
     for i, q in enumerate(["Q1 (Apr 15)", "Q2 (Jun 15)", "Q3 (Sep 15)", "Q4 (Jan 15)"], 1):
         ws_ds[f"A{54+i}"] = q; ws_ds[f"B{54+i}"] = f"=B49 * {0.25*i}"; ws_ds[f"C{54+i}"] = f"=MAX(0, B{54+i} - B50)"
+    
+    ws_ds["A60"] = "STATE PAYMENT SCHEDULE"
+    for i, q in enumerate(["Q1 (Apr 15)", "Q2 (Jun 15)", "Q3 (Sep 15)", "Q4 (Jan 15)"], 1):
         rate = [0.3, 0.7, 0.7, 1.0][i-1]
         ws_ds[f"A{60+i}"] = q; ws_ds[f"B{60+i}"] = f"=B51 * {rate}"; ws_ds[f"C{60+i}"] = f"=MAX(0, B{60+i} - B52)"
+
+    # --- Data Validation (Restored) ---
 
     # --- Right Side Status Panel ---
     ws_ds["I1"] = "PAYMENT ACTION CENTER"
@@ -258,10 +260,10 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
                     if cell.coordinate in ["I2", "J2", "I8", "J8"]: cell.font = st_crit
                     
                     if cell.column == 2:
-                        if cell.row in [4,5,6,7,12,14,15,18,19,20,21,22,23,24,27,28,29,30,33,34,35,36,37,40,41,42,43,44,45,46,49,50,51,52]: cell.number_format = FORMAT_CURRENCY
+                        if (4 <= cell.row <= 52) or (55 <= cell.row <= 64): cell.number_format = FORMAT_CURRENCY
                         elif cell.row == 13: cell.number_format = FORMAT_PERCENT
                         elif cell.row == 9: cell.number_format = FORMAT_DATE
-                    if cell.column == 3 and cell.row >= 54: cell.number_format = FORMAT_CURRENCY
+                    if cell.column == 3 and (55 <= cell.row <= 64): cell.number_format = FORMAT_CURRENCY
                     if cell.column == 10:
                         if cell.row in [2,4,5,8,10,11]: cell.number_format = FORMAT_CURRENCY
                         elif cell.row in [18,19,20,21]: cell.number_format = FORMAT_PERCENT
