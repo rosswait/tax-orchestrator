@@ -5,6 +5,7 @@ from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.comments import Comment
 from datetime import datetime
+import os
 
 def create_tax_workbook(status="Single", dependents=0, year=2026):
     wb = Workbook()
@@ -167,7 +168,20 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     ws_const.append(["Status", "NIIT Threshold", "Addl Medicare", "CTC Phaseout Start"])
     for row in surtaxes: ws_const.append(row)
 
-    # --- Extensive Annotations (Refined: No Headers in text) ---
+    # --- 6. AI Instructions Tab (New / Last) ---
+    ws_ai = wb.create_sheet("AI Parsing Instructions")
+    ws_ai.append(["PROMPT INSTRUCTIONS"])
+    ws_ai.append(["Copy and paste the text below into an AI (like Gemini, ChatGPT, or Claude) along with your paystubs or brokerage statements to automatically extract the data for this workbook."])
+    ws_ai.append([""])
+    instr_path = "parsing_agent_instructions.md"
+    if os.path.exists(instr_path):
+        with open(instr_path, "r") as f:
+            for line in f:
+                ws_ai.append([line.strip()])
+    else:
+        ws_ai.append(["[Error: parsing_agent_instructions.md not found. Please ensure the file exists in the current directory.]"])
+
+    # --- Extensive Annotations ---
     ANN = {
         "D1": "Record your quarterly estimated tax payments made directly to the IRS or FTB here. This is the primary source of truth for tracking payments made outside of payroll withholding.",
         "E2": "MANUAL ENTRY. This field is not auto-populated. It is provided as a convenience for you to manually log what the system recommended at the time of your payment for your records.",
@@ -175,7 +189,7 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
         "G2": "Track payment confirmation numbers, specific quarterly intent, or voucher details here.",
         "B4": "Enter your total tax from last year's Federal Form 1040 (typically Line 24 minus Line 19).",
         "B5": "Enter your total tax from last year's California Form 540.",
-        "B12": "Adjust total income for one-off events like bonuses or unpaid leave that aren't recurring in your payroll snapshots.",
+        "B12": "Manual Offset: Adjust total income for one-off events like bonuses or unpaid leave that aren't recurring in your payroll snapshots.",
         "B13": "1.0 = normal earnings. Use < 1.0 if you expect to stop working. Use > 1.0 if you expect a year-end windfall.",
         "I1": "The high-visibility focal point for immediate tax obligations. Values here update automatically based on today's date and your entered payments.",
         "I15": "A real-time health check on your tax situation. Verify your Effective Rates and Brackets to ensure the model matches your expectations.",
@@ -183,8 +197,6 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
         "I18": "Total projected Federal Tax divided by Federal AGI. (Standardized against Federal AGI for comparability).",
         "I19": "Total projected California Tax divided by Federal AGI. (Standardized against Federal AGI for comparability).",
         "I21": "The highest tax rate applied to your last dollar of California income.",
-        "I26": "Alerts you if your latest snapshot is more than 30 days old. Keeping this current ensures accurately pro-rated future predictions.",
-        "I27": "Critical for Safe Harbor targeting. Warns you if your prior-year tax liability is missing from the Configuration section (B4/B5).",
         "I28": "HSA Verification: Checks that HSA contributions are added back to California income. If you do not have an HSA, this will simply confirm 'No HSA Detected'."
     }
 
@@ -197,7 +209,7 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     side = Side(border_style="thin", color="000000")
     st_border = Border(top=side, left=side, right=side, bottom=side)
     
-    sec_k = ["Configuration", "Notes", "Quick Start", "Assumptions", "Projection", "Calculation", "Requirements", "Ledger", "SCHEDULE", "CENTER", "DIAGNOSTICS", "WARNINGS"]
+    sec_k = ["Configuration", "Notes", "Quick Start", "Assumptions", "Projection", "Calculation", "Requirements", "Ledger", "SCHEDULE", "CENTER", "DIAGNOSTICS", "WARNINGS", "AI Parsing", "PROMPT"]
     in_c = ["B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9", "B12", "B13", "B14", "B15"]
 
     for ws in wb.worksheets:
@@ -205,9 +217,15 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
             for cell in row:
                 coord = cell.coordinate; val = str(cell.value)
                 
-                # Apply Comments (Refined)
+                # Apply Comments (Dashboard)
                 if ws.title == "Dashboard" and coord in ANN:
                     cell.comment = Comment(ANN[coord], "Ross Wait")
+                
+                # Apply Comments (Snapshots)
+                if ws.title == "Wage Snapshots" and coord == "A1":
+                    cell.comment = Comment("PREFERRED USAGE: Enter your latest YTD paystub data in a single row, overwriting previous data. Periodic/per-paycheck statements also work if entered as a complete, sequential set.", "Ross Wait")
+                if ws.title == "Investment Income Snapshots" and coord == "A1":
+                    cell.comment = Comment("PREFERRED USAGE: Enter your cumulative YTD brokerage totals, overwriting previous rows. Monthly/Quarterly statements work if they form a complete, non-overlapping sequence.", "Ross Wait")
 
                 # --- Section Header Styling ---
                 is_header = False
@@ -215,7 +233,9 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
                     is_header = True
                 elif ws.title == "Instructions" and cell.row in [1, 8]:
                     is_header = True
-                elif ws.title not in ["Dashboard", "Instructions"] and cell.row == 1:
+                elif ws.title == "AI Parsing Instructions" and cell.row in [1]:
+                    is_header = True
+                elif ws.title not in ["Dashboard", "Instructions", "AI Parsing Instructions"] and cell.row == 1:
                     is_header = True
 
                 if is_header:
@@ -254,7 +274,7 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
             l = max([len(str(c.value)) for c in col if c.value and not str(c.value).startswith('=')] + [10])
             ws.column_dimensions[col[0].column_letter].width = min(l + 2, 28)
 
-    wb.save("Tax_Orchestrator_Template.xlsx")
+    wb.save("Estimated_Tax_Calculator_Template.xlsx")
     print(f"Workbook polished and generated successfully.")
 
 if __name__ == "__main__":
