@@ -209,7 +209,7 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
                 is_header = False
                 if ws.title == "Dashboard" and any(k in val for k in sec_k):
                     is_header = True
-                elif ws.title == "Instructions" and cell.row in [1, 9]:
+                elif ws.title == "Instructions" and cell.row in [1, 8]:
                     is_header = True
                 elif ws.title not in ["Dashboard", "Instructions"] and cell.row == 1:
                     is_header = True
