@@ -49,7 +49,7 @@ Instead of entering every transaction, use the **Snapshots** methodology:
 - **Investment Snapshots**: Enter your cumulative YTD statements. 
 
 ### 3. Agent-Assisted Parsing
-Use the included `parsing_agent_instructions.md` (also found in the Excel tab "Parsing Instructions for Agents") with Gemini or ChatGPT to extract snapshot-ready data directly from your PDF statements.  This can be imlemented as a skill, prompt, or preconfigured prompt (eg. Gemini Gem)
+Use the included `parsing_agent_instructions.md` (also found in the Excel tab "Parsing Instructions for Agents") with your preferred LLM to extract snapshot-ready data directly from screenshots or statements.  This can be imlemented as a skill, prompt, or preconfigured prompt (eg. Gemini Gem).
 
 ---
 
