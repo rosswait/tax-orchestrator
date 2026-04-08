@@ -1,8 +1,8 @@
 # 📊 Estimated Tax Calculator
 
-The **Estimated Tax Calculator** is an automated Federal and California tax projection engine. It generates a sophisticated Excel workbook that allows you to track your estimated tax liability and payments throughout the year with minimal manual entry.
+The **Estimated Tax Calculator** is an automated Federal and California tax projection engine. It generates an Excel workbook that allows you to track your estimated tax liability and payments throughout the year with minimal manual entry.
 
-It also includes integrated instructions for an LLM agent to translate paystub and brokerage statements directly into the required format for the workbook.
+It also includes integrated instructions for an LLM agent or skill to translate paystub and brokerage statements directly into the required format for the workbook.
 
 ---
 
@@ -49,7 +49,7 @@ Instead of entering every transaction, use the **Snapshots** methodology:
 - **Investment Snapshots**: Enter your cumulative YTD statements. 
 
 ### 3. Agent-Assisted Parsing
-Use the included `parsing_agent_instructions.md` (also found in the Excel tab "Parsing Instructions for Agents") with Gemini or ChatGPT to extract snapshot-ready data directly from your PDF statements.
+Use the included `parsing_agent_instructions.md` (also found in the Excel tab "Parsing Instructions for Agents") with Gemini or ChatGPT to extract snapshot-ready data directly from your PDF statements.  This can be imlemented as a skill, prompt, or preconfigured prompt (eg. Gemini Gem)
 
 ---
 
