@@ -61,7 +61,6 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     # --- 1. Instructions Tab (First) ---
     ws_instr = wb.active; ws_instr.title = "Instructions"
     ws_instr.append(["Quick Start Guide"])
-    ws_instr.append([""])
     ws_instr.append(["Step 1: Enter your latest YTD paystub details in the 'Wage Snapshots' tab."])
     ws_instr.append(["Step 2: Enter your latest YTD brokerage totals in 'Investment Income Snapshots'."])
     ws_instr.append(["Step 3: (Optional) Enter your 'Prior Year Tax' liability in the Dashboard to enable Safe Harbor targets."])
@@ -273,7 +272,7 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
                 is_header = False
                 if ws.title == "Dashboard" and any(k in val for k in sec_k):
                     is_header = True
-                elif ws.title == "Instructions" and cell.row in [1, 9]:
+                elif ws.title == "Instructions" and cell.row in [1, 8]:
                     is_header = True
                 elif ws.title == "Parsing Instructions for Agents" and cell.row in [1]:
                     is_header = True
