@@ -24,6 +24,7 @@ Tax laws are stored in the `constants/` directory, organized by year (e.g., `con
 - **Federal**: Ordinary and Capital Gains brackets for all filing statuses (Single, MFJ, MFS, HoH).
 - **California**: progressive logic, including the 1% Mental Health Services Surcharge.
 - **Surtaxes**: Integrated NIIT, Additional Medicare, and CTC phase-outs.
+- **Projection Logic**: Dividends and Interest are automatically projected to year-end based on the current quarter. Capital Gains (Short/Long term) are treated as one-off events and are **not** projected.
 
 ### 4. Pro-Active Warning System
 The dashboard automatically flags:
@@ -47,6 +48,7 @@ Run the Python script to generate a clean, formatted `.xlsx` template.
 Instead of entering every transaction, use the **Snapshots** methodology:
 - **Wage Snapshots**: Enter your latest YTD paystub totals. The engine will pro-rate the rest of the year automatically based on days elapsed.
 - **Investment Snapshots**: Enter your cumulative YTD statements. 
+- **Configuration (Optional)**: Enter your **Prior Year Tax** liability to enable Safe Harbor targets, and any estimated **Itemized Deductions** if you expect to exceed the Standard Deduction.
 
 ### 3. Agent-Assisted Parsing
 Use the included `parsing_agent_instructions.md` (also found in the Excel tab "Parsing Instructions for Agents") with your preferred LLM to extract snapshot-ready data directly from screenshots or statements.  This can be imlemented as a skill, prompt, or preconfigured prompt (eg. Gemini Gem).

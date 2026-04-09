@@ -64,11 +64,12 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     ws_instr.append([""])
     ws_instr.append(["Step 1: Enter your latest YTD paystub details in the 'Wage Snapshots' tab."])
     ws_instr.append(["Step 2: Enter your latest YTD brokerage totals in 'Investment Income Snapshots'."])
-    ws_instr.append(["Step 3: Enter your 'Prior Year Tax' liability in the Dashboard to enable Safe Harbor targets."])
-    ws_instr.append(["Step 4: Check the 'PAYMENT ACTION CENTER' on the Dashboard for immediate payment requirements."])
+    ws_instr.append(["Step 3: (Optional) Enter your 'Prior Year Tax' liability in the Dashboard to enable Safe Harbor targets."])
+    ws_instr.append(["Step 4: (Optional) Enter your estimated 'Itemized Deductions' if you expect to exceed the Standard Deduction."])
+    ws_instr.append(["Step 5: Check the 'PAYMENT ACTION CENTER' on the Dashboard for immediate payment requirements."])
     ws_instr.append([""])
     ws_instr.append(["Important Notes"])
-    ws_instr.append(["1. Investment Income: All dividends and interest are combined and taxed as Ordinary Income for a safe, conservative projection."])
+    ws_instr.append(["1. Investment Income: Dividends and Interest are automatically projected for the full year based on the current quarter. Capital Gains (Short/Long term) are treated as one-off events and are NOT projected."])
     ws_instr.append(["2. HSA (California): HSA contributions are automatically added back to CA state income as they are not deductible in California."])
     ws_instr.append(["3. Income Projections: The engine pro-rates your remaining annual income based on the days elapsed since Jan 1. You can adjust these projections by entering values into 'Manual Income Offset' or 'Future Income Weight' in Section 1.5 of the Dashboard."])
     ws_instr.append(["4. YTD Methodology: Always use Year-to-Date (YTD) totals from your statements. Overwrite existing rows as new statements arrive."])
@@ -251,7 +252,7 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     st_border = Border(top=side, left=side, right=side, bottom=side)
     
     sec_k = ["Configuration", "Notes", "Quick Start", "Assumptions", "Projection", "Calculation", "Requirements", "Ledger", "SCHEDULE", "CENTER", "DIAGNOSTICS", "WARNINGS", "AI Parsing", "PROMPT"]
-    in_c = ["B2", "B3", "B4", "B5", "B6", "B7", "B9", "B12", "B13", "B14", "B15"]
+    in_c = ["B2", "B3", "B4", "B5", "B6", "B7", "B9", "B12", "B13"]
 
     for ws in wb.worksheets:
         for row in ws.iter_rows():
