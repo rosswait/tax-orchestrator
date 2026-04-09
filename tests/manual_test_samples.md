@@ -7,7 +7,7 @@ You can use the samples below to verify your Estimated Tax Calculator. Copy the 
 ## Scenario 1: Standard Mid-Year (Single Filer)
 **Configuration**:
 - Filing Status: `Single`
-- Status Date: `04/08/2026` (Inferred Quarter: **1**)
+- Filing (Current) Date: `04/08/2026` (Inferred Quarter: **1**)
 
 ### Wage Snapshots
 *Copy and paste into row 2 of 'Wage Snapshots'*

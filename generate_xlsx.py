@@ -83,7 +83,7 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     ws_ds["A6"] = "Estimated Fed Itemized Deduction"; ws_ds["B6"] = 0
     ws_ds["A7"] = "Estimated CA Itemized Deduction"; ws_ds["B7"] = 0
     ws_ds["A8"] = "Estimated Tax Year"; ws_ds["B8"] = "=IF(AND(MONTH(B9)=1, DAY(B9)<=30), YEAR(B9)-1, YEAR(B9))"
-    ws_ds["A9"] = "Status Date"; ws_ds["B9"] = "=TODAY()"
+    ws_ds["A9"] = "Filing (Current) Date"; ws_ds["B9"] = "=TODAY()"
     ws_ds["A10"] = "Inferred Estimated Tax Quarter"; ws_ds["B10"] = "=MIN(4, MAX(1, ROUNDUP((MONTH(B9)-1)/3, 0)))"
 
     ws_ds["A12"] = "Projection & Assumptions"
@@ -225,14 +225,14 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
         "F2": "ENTER PAYMENTS HERE. Required for DUE NOW calculations.",
         "B4": "Enter total tax from last year's Federal Form 1040.",
         "B5": "Enter total tax from last year's California Form 540.",
-        "B9": "The baseline date used for deadlines and current quarter inference.",
-        "B10": "Automatically calculated based on the Status Date using a 30-day buffer. This drives your Interest/Dividend projections.",
+        "B9": "The baseline date used for deadlines and current quarter inference (Filing Date).",
+        "B10": "Automatically calculated based on the Filing Date using a 30-day buffer. This drives your Interest/Dividend projections.",
         "B13": "Manual Offset for one-off bonuses/non-recurring income.",
         "B14": "1.0 = normal earnings weight for projected future income.",
         "B17": "Projects Dividends/Interest for the remainder of the year based on the Inferred Quarter (B10).",
         "I1": "PAYMENT ACTION CENTER: High-level status board for current obligations.",
         "I15": "TAX DIAGNOSTICS: Real-time health check on rates and logic.",
-        "I24": "Displays the quarter the logic is currently assuming for projections (1=Apr, 2=Jul, 3=Oct, 4=Jan NEXT YEAR).",
+        "I24": "Displays the quarter the logic is currently assuming for projections based on the Filing Date (1=Apr, 2=Jul, 3=Oct, 4=Jan NEXT YEAR).",
         "I28": "HSA Verification: Checks addition back to CA income.",
         "I29": "Warns if Federal brackets are from a prior logic year."
     }

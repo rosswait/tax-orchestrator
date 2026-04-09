@@ -64,16 +64,16 @@ def test_all_filing_statuses(status, expected_on_20k):
     tax = engine.calculate_tax(20000, "fed_ord")
     assert tax == pytest.approx(expected_on_20k)
 
-@pytest.mark.parametrize("status_date,expected_multiplier", [
+@pytest.mark.parametrize("filing_date,expected_multiplier", [
     ("04/08/2026", 3.0), # Q1 -> (4/1)-1 = 3
     ("05/15/2026", 1.0), # Q2 -> (4/2)-1 = 1
     ("08/10/2026", 0.3333333333333333), # Q3 -> (4/3)-1 = 0.33
     ("11/20/2026", 0.0), # Q4 -> (4/4)-1 = 0
 ])
-def test_dividend_projection_multipliers(status_date, expected_multiplier):
+def test_dividend_projection_multipliers(filing_date, expected_multiplier):
     """Test E: Verify that dividend/interest projection multipliers align with the inferred quarter"""
     engine = TaxShadowEngine(year=2026, status="Single")
-    q = engine.calculate_inferred_quarter(status_date)
+    q = engine.calculate_inferred_quarter(filing_date)
     # The multiplier used in generate_xlsx.py (B17) and logic_engine.py
     multiplier = (4 / q) - 1
     assert multiplier == pytest.approx(expected_multiplier)

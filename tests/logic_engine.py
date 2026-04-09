@@ -22,8 +22,8 @@ class TaxShadowEngine:
                 data[key] = json.load(f)
         return data
 
-    def calculate_inferred_quarter(self, status_date_str):
-        dt = datetime.strptime(status_date_str, "%m/%d/%Y")
+    def calculate_inferred_quarter(self, filing_date_str):
+        dt = datetime.strptime(filing_date_str, "%m/%d/%Y")
         # 30-day buffer logic: ROUNDUP((MONTH-1)/3, 0)
         q = math.ceil((dt.month - 1) / 3)
         return max(1, min(4, q))
@@ -48,8 +48,8 @@ class TaxShadowEngine:
 
     def run_scenario(self, scenario):
         config = scenario["config"]
-        status_date = config["status_date"]
-        q_inferred = self.calculate_inferred_quarter(status_date)
+        filing_date = config["filing_date"]
+        q_inferred = self.calculate_inferred_quarter(filing_date)
         
         # 1. Projections
         latest_wage = scenario["wage_snapshots"][-1]
