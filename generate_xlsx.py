@@ -182,6 +182,7 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     ws_ds["I30"] = "Fed Brackets Stale:"; ws_ds["J30"] = f"=IF(B8 > J23, \"⚠️ FED STALE: \"&B8&\" brackets missing, using {LOGIC_YEAR} instead\", \"OK\")"
     ws_ds["I31"] = "CA Brackets Stale:"; ws_ds["J31"] = f"=IF(B8 > J23, \"⚠️ CA STALE: \"&B8&\" brackets missing, using {LOGIC_YEAR} instead\", \"OK\")"
     ws_ds["I32"] = "Filing Date Validity:"; ws_ds["J32"] = "=IF(OR(B9 < DATE(B8,1,1), B9 > DATE(B8+1,1,30)), \"🔴 ERR: DATE OUT OF RANGE\", \"OK\")"
+    ws_ds["I33"] = "HOH Validation:"; ws_ds["J33"] = "=IF(AND(B2=\"HoH\", B3=0), \"⚠️ UNLIKELY: HOH with 0 deps\", \"OK\")"
 
     # --- 5. Data & Constants Tabs ---
     ws_inv = wb.create_sheet("Investment Income Snapshots")
@@ -237,7 +238,8 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
         "I29": "HSA Verification: Checks addition back to CA income.",
         "I30": "Warns if Federal brackets are from prior years.",
         "I31": "Warns if CA brackets are from prior years.",
-        "I32": "Flags red if the Filing Date is before the Tax Year start or after the January buffer ends."
+        "I32": "Flags red if the Filing Date is before the Tax Year start or after the January buffer ends.",
+        "I33": "Warns if Head of Household is selected with zero dependents (legal but rare)."
     }
 
     # --- Premium Formatting Engine ---

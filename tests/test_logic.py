@@ -117,3 +117,20 @@ def test_filing_date_validity_check():
     
     # Clean up
     os.remove(filename)
+
+def test_hoh_dependent_warning():
+    """Test G: Verify the Active Warning for HoH with 0 dependents"""
+    filename = "tests/data/hoh_test.xlsx"
+    create_tax_workbook(status="HoH", dependents=0, year=2026)
+    os.rename("Estimated_Tax_Calculator_Template.xlsx", filename)
+    
+    wb = openpyxl.load_workbook(filename)
+    ds = wb["Dashboard"]
+    
+    # 1. Formula Presence
+    assert ds["I33"].value == "HOH Validation:"
+    assert "B2=\"HoH\"" in ds["J33"].value
+    assert "B3=0" in ds["J33"].value
+    
+    # Clean up
+    os.remove(filename)
