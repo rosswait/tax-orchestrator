@@ -181,6 +181,7 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     ws_ds["I29"] = "HSA Verification (CA):"; ws_ds["J29"] = "=IF(SUM('Wage Snapshots'!D:D)=0, \"✅ No HSA Detected\", IF(B22=B21, \"🔴 ERR: HSA NOT ADDED TO CA\", \"✅ HSA Corrected (CA)\"))"
     ws_ds["I30"] = "Fed Brackets Stale:"; ws_ds["J30"] = f"=IF(B8 > J23, \"⚠️ FED STALE: \"&B8&\" brackets missing, using {LOGIC_YEAR} instead\", \"OK\")"
     ws_ds["I31"] = "CA Brackets Stale:"; ws_ds["J31"] = f"=IF(B8 > J23, \"⚠️ CA STALE: \"&B8&\" brackets missing, using {LOGIC_YEAR} instead\", \"OK\")"
+    ws_ds["I32"] = "Filing Date Validity:"; ws_ds["J32"] = "=IF(OR(B9 < DATE(B8,1,1), B9 > DATE(B8+1,1,30)), \"🔴 ERR: DATE OUT OF RANGE\", \"OK\")"
 
     # --- 5. Data & Constants Tabs ---
     ws_inv = wb.create_sheet("Investment Income Snapshots")
@@ -232,9 +233,11 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
         "B17": "Projects Dividends/Interest for the remainder of the year based on the Inferred Quarter (B10).",
         "I1": "PAYMENT ACTION CENTER: High-level status board for current obligations.",
         "I15": "TAX DIAGNOSTICS: Real-time health check on rates and logic.",
-        "I24": "Displays the quarter the logic is currently assuming for projections based on the Filing Date (1=Apr, 2=Jul, 3=Oct, 4=Jan NEXT YEAR).",
-        "I28": "HSA Verification: Checks addition back to CA income.",
-        "I29": "Warns if Federal brackets are from a prior logic year."
+        "I24": "Displays the quarter the logic is currently assuming for projections based on the Filing Date.",
+        "I29": "HSA Verification: Checks addition back to CA income.",
+        "I30": "Warns if Federal brackets are from prior years.",
+        "I31": "Warns if CA brackets are from prior years.",
+        "I32": "Flags red if the Filing Date is before the Tax Year start or after the January buffer ends."
     }
 
     # --- Premium Formatting Engine ---

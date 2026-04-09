@@ -100,3 +100,20 @@ def test_spreadsheet_formula_integrity():
     
     # Cleanup
     os.remove(filename)
+
+def test_filing_date_validity_check():
+    """Test F: Verify the Active Warning for Filing Date out-of-range detection"""
+    filename = "tests/data/validity_test.xlsx"
+    # Generate for 2026
+    create_tax_workbook(status="Single", dependents=0, year=2026)
+    os.rename("Estimated_Tax_Calculator_Template.xlsx", filename)
+    
+    wb = openpyxl.load_workbook(filename)
+    ds = wb["Dashboard"]
+    
+    # 1. Formula Presence
+    assert ds["I32"].value == "Filing Date Validity:"
+    assert ds["J32"].value.startswith("=IF(OR(B9 < DATE(B8,1,1)")
+    
+    # Clean up
+    os.remove(filename)
