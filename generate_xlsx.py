@@ -93,36 +93,36 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     ws_ds["A15"] = "Remaining Year Deductions"; ws_ds["B15"] = "=IF(MAX('Wage Snapshots'!A:A)=0, 0, (SUM('Wage Snapshots'!C:D) / MAX(1, MAX('Wage Snapshots'!A:A) - DATE(B8,1,1))) * (DATE(B8,12,31) - MAX('Wage Snapshots'!A:A)))"
     ws_ds["A16"] = "Remaining Year Interest and Dividends"; ws_ds["B16"] = "=SUM('Investment Income Snapshots'!C:C) * ( (4 / ROUNDUP(MONTH(B9)/3, 0)) - 1 )"
 
-    ws_ds["A17"] = "Consolidated Income Projection"
-    ws_ds["A18"] = "Total Projected Wage Income"; ws_ds["B18"] = "=SUM('Wage Snapshots'!B:B) + (B14 * B13) + B12"
-    ws_ds["A19"] = "Federal W-2 State Wages"; ws_ds["B19"] = "=B18 - SUM('Wage Snapshots'!C:D) - (B15 * B13)"
-    ws_ds["A20"] = "CA W-2 State Wages"; ws_ds["B20"] = "=B18 - SUM('Wage Snapshots'!C:C) - (SUM('Wage Snapshots'!C:C)/MAX(1, SUM('Wage Snapshots'!C:D))) * B15 * B13"
-    ws_ds["A21"] = "Investment Ordinary (Div/Int + STG)"; ws_ds["B21"] = "=SUM('Investment Income Snapshots'!C:C) + B16 + SUM('Investment Income Snapshots'!D:D)"
-    ws_ds["A22"] = "Investment Preferential (LTG Only)"; ws_ds["B22"] = "=SUM('Investment Income Snapshots'!E:E)"
-    ws_ds["A23"] = "Total Projected Federal AGI"; ws_ds["B23"] = "=B19 + B21 + B22"
-    ws_ds["A24"] = "Total Projected CA AGI"; ws_ds["B24"] = "=B20 + B21 + B22"
+    ws_ds["A18"] = "Consolidated Income Projection"
+    ws_ds["A19"] = "Total Projected Wage Income"; ws_ds["B19"] = "=SUM('Wage Snapshots'!B:B) + (B14 * B13) + B12"
+    ws_ds["A20"] = "Federal W-2 State Wages"; ws_ds["B20"] = "=B19 - SUM('Wage Snapshots'!C:D) - (B15 * B13)"
+    ws_ds["A21"] = "CA W-2 State Wages"; ws_ds["B21"] = "=B19 - SUM('Wage Snapshots'!C:C) - (SUM('Wage Snapshots'!C:C)/MAX(1, SUM('Wage Snapshots'!C:D))) * B15 * B13"
+    ws_ds["A22"] = "Investment Ordinary (Div/Int + STG)"; ws_ds["B22"] = "=SUM('Investment Income Snapshots'!C:C) + B16 + SUM('Investment Income Snapshots'!D:D)"
+    ws_ds["A23"] = "Investment Preferential (LTG Only)"; ws_ds["B23"] = "=SUM('Investment Income Snapshots'!E:E)"
+    ws_ds["A24"] = "Total Projected Federal AGI"; ws_ds["B24"] = "=B20 + B22 + B23"
+    ws_ds["A25"] = "Total Projected CA AGI"; ws_ds["B25"] = "=B21 + B22 + B23"
 
-    ws_ds["A26"] = "Federal Tax Calculation"
-    ws_ds["A27"] = "Deduction Applied (Max Std/Item)"; ws_ds["B27"] = "=MAX(XLOOKUP(B2, 'Tax Constants'!B3:B30, 'Tax Constants'!F3:F30, 0), B6)"
-    ws_ds["A28"] = "Ordinary Taxable Income"; ws_ds["B28"] = "=MAX(0, B23 - B27 - B22)"
-    ws_ds["A29"] = "Ordinary Income Tax"; ws_ds["B29"] = "=XLOOKUP(B28, FILTER('Tax Constants'!C3:C30, 'Tax Constants'!B3:B30=B2), FILTER('Tax Constants'!D3:D30, 'Tax Constants'!B3:B30=B2), 0, -1) + (B28 - XLOOKUP(B28, FILTER('Tax Constants'!C3:C30, 'Tax Constants'!B3:B30=B2), FILTER('Tax Constants'!C3:C30, 'Tax Constants'!B3:B30=B2), 0, -1)) * XLOOKUP(B28, FILTER('Tax Constants'!C3:C30, 'Tax Constants'!B3:B30=B2), FILTER('Tax Constants'!E3:E30, 'Tax Constants'!B3:B30=B2), 0, -1)"
-    ws_ds["A30"] = "Capital Gains Tax"; ws_ds["B30"] = "=IF(B22>0, B22 * XLOOKUP(B28+B22, FILTER('Tax Constants'!C34:C45, 'Tax Constants'!B34:B45=B2), FILTER('Tax Constants'!D34:D45, 'Tax Constants'!B34:B45=B2), 0, -1), 0)"
+    ws_ds["A27"] = "Federal Tax Calculation"
+    ws_ds["A28"] = "Deduction Applied (Max Std/Item)"; ws_ds["B28"] = "=MAX(XLOOKUP(B2, 'Tax Constants'!B3:B30, 'Tax Constants'!F3:F30, 0), B6)"
+    ws_ds["A29"] = "Ordinary Taxable Income"; ws_ds["B29"] = "=MAX(0, B24 - B28 - B23)"
+    ws_ds["A30"] = "Ordinary Income Tax"; ws_ds["B30"] = "=XLOOKUP(B29, FILTER('Tax Constants'!C3:C30, 'Tax Constants'!B3:B30=B2), FILTER('Tax Constants'!D3:D30, 'Tax Constants'!B3:B30=B2), 0, -1) + (B29 - XLOOKUP(B29, FILTER('Tax Constants'!C3:C30, 'Tax Constants'!B3:B30=B2), FILTER('Tax Constants'!C3:C30, 'Tax Constants'!B3:B30=B2), 0, -1)) * XLOOKUP(B29, FILTER('Tax Constants'!C3:C30, 'Tax Constants'!B3:B30=B2), FILTER('Tax Constants'!E3:E30, 'Tax Constants'!B3:B30=B2), 0, -1)"
+    ws_ds["A31"] = "Capital Gains Tax"; ws_ds["B31"] = "=IF(B23>0, B23 * XLOOKUP(B29+B23, FILTER('Tax Constants'!C34:C45, 'Tax Constants'!B34:B45=B2), FILTER('Tax Constants'!D34:D45, 'Tax Constants'!B34:B45=B2), 0, -1), 0)"
 
-    ws_ds["A32"] = "CA Tax Calculation"
-    ws_ds["A33"] = "CA Deduction Applied"; ws_ds["B33"] = "=MAX(XLOOKUP(B2, 'Tax Constants'!B49:B84, 'Tax Constants'!F49:F84, 0), B7)"
-    ws_ds["A34"] = "CA Taxable Income"; ws_ds["B34"] = "=MAX(0, B24 - B33)"
-    ws_ds["A35"] = "CA Regular Tax"; ws_ds["B35"] = "=XLOOKUP(B34, FILTER('Tax Constants'!C49:C84, 'Tax Constants'!B49:B84=B2), FILTER('Tax Constants'!D49:D84, 'Tax Constants'!B49:B84=B2), 0, -1) + (B34 - XLOOKUP(B34, FILTER('Tax Constants'!C49:C84, 'Tax Constants'!B49:B84=B2), FILTER('Tax Constants'!C49:C84, 'Tax Constants'!B49:B84=B2), 0, -1)) * XLOOKUP(B34, FILTER('Tax Constants'!C49:C84, 'Tax Constants'!B49:B84=B2), FILTER('Tax Constants'!E49:E84, 'Tax Constants'!B49:B84=B2), 0, -1)"
-    ws_ds["A36"] = "CA MH Surcharge (1%)"; ws_ds["B36"] = "=IF(B34 > 1000000, (B34 - 1000000) * 0.01, 0)"
-    ws_ds["A37"] = "Total CA Liability"; ws_ds["B37"] = "=B35 + B36"
+    ws_ds["A33"] = "CA Tax Calculation"
+    ws_ds["A34"] = "CA Deduction Applied"; ws_ds["B34"] = "=MAX(XLOOKUP(B2, 'Tax Constants'!B49:B84, 'Tax Constants'!F49:F84, 0), B7)"
+    ws_ds["A35"] = "CA Taxable Income"; ws_ds["B35"] = "=MAX(0, B25 - B34)"
+    ws_ds["A36"] = "CA Regular Tax"; ws_ds["B36"] = "=XLOOKUP(B35, FILTER('Tax Constants'!C49:C84, 'Tax Constants'!B49:B84=B2), FILTER('Tax Constants'!D49:D84, 'Tax Constants'!B49:B84=B2), 0, -1) + (B35 - XLOOKUP(B35, FILTER('Tax Constants'!C49:C84, 'Tax Constants'!B49:B84=B2), FILTER('Tax Constants'!C49:C84, 'Tax Constants'!B49:B84=B2), 0, -1)) * XLOOKUP(B35, FILTER('Tax Constants'!C49:C84, 'Tax Constants'!B49:B84=B2), FILTER('Tax Constants'!E49:E84, 'Tax Constants'!B49:B84=B2), 0, -1)"
+    ws_ds["A37"] = "CA MH Surcharge (1%)"; ws_ds["B37"] = "=IF(B35 > 1000000, (B35 - 1000000) * 0.01, 0)"
+    ws_ds["A38"] = "Total CA Liability"; ws_ds["B38"] = "=B36 + B37"
 
-    ws_ds["A39"] = "Final Liability & Surtaxes"
-    ws_ds["A40"] = "NIIT Threshold"; ws_ds["B40"] = "=XLOOKUP(B2, 'Tax Constants'!B88:B91, 'Tax Constants'!C88:C91, 200000)"
-    ws_ds["A41"] = "NIIT (Fed)"; ws_ds["B41"] = "=IF(B23 > B40, 0.038 * MIN(B23-B40, B21+B22), 0)"
-    ws_ds["A42"] = "Addl Medicare Threshold"; ws_ds["B42"] = "=XLOOKUP(B2, 'Tax Constants'!B88:B91, 'Tax Constants'!D88:D91, 200000)"
-    ws_ds["A43"] = "Addl Medicare (Fed)"; ws_ds["B43"] = "=IF(B18 > B42, 0.009 * (B18-B42), 0)"
-    ws_ds["A44"] = "CTC Phaseout Start"; ws_ds["B44"] = "=XLOOKUP(B2, 'Tax Constants'!B88:B91, 'Tax Constants'!E88:E91, 200000)"
-    ws_ds["A45"] = "Child Tax Credit"; ws_ds["B45"] = "=IF(B23 > B44, MAX(0, (B3*2000)-((B23-B44)/1000)*50), B3*2000)"
-    ws_ds["A46"] = "Total Federal Liability"; ws_ds["B46"] = "=B29 + B30 + B41 + B43 - B45"
+    ws_ds["A40"] = "Final Liability & Surtaxes"
+    ws_ds["A41"] = "NIIT Threshold"; ws_ds["B41"] = "=XLOOKUP(B2, 'Tax Constants'!B88:B91, 'Tax Constants'!C88:C91, 200000)"
+    ws_ds["A42"] = "NIIT (Fed)"; ws_ds["B42"] = "=IF(B24 > B41, 0.038 * MIN(B24-B41, B22+B23), 0)"
+    ws_ds["A43"] = "Addl Medicare Threshold"; ws_ds["B43"] = "=XLOOKUP(B2, 'Tax Constants'!B88:B91, 'Tax Constants'!D88:D91, 200000)"
+    ws_ds["A44"] = "Addl Medicare (Fed)"; ws_ds["B44"] = "=IF(B19 > B43, 0.009 * (B19-B43), 0)"
+    ws_ds["A45"] = "CTC Phaseout Start"; ws_ds["B45"] = "=XLOOKUP(B2, 'Tax Constants'!B88:B91, 'Tax Constants'!E88:E91, 200000)"
+    ws_ds["A46"] = "Child Tax Credit"; ws_ds["B46"] = "=IF(B24 > B45, MAX(0, (B3*2000)-((B24-B45)/1000)*50), B3*2000)"
+    ws_ds["A47"] = "Total Federal Liability"; ws_ds["B47"] = "=B30 + B31 + B42 + B44 - B46"
 
     ws_ds["D1"] = "Estimated Tax Payments Ledger"
     ws_ds["D2"] = "Date"; ws_ds["E2"] = "Calculated Estimate (Optional)"; ws_ds["F2"] = "Actual Payment Made (Required)"; ws_ds["G2"] = "Note"
@@ -131,53 +131,53 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     ws_ds["D7"]=f"=DATE(B8,9,15)"; ws_ds["G7"]="Fed Q3"; ws_ds["D8"]=f"=DATE(B8,9,15)"; ws_ds["G8"]="CA Q3"
     ws_ds["D9"]=f"=DATE(B8+1,1,15)"; ws_ds["G9"]="Fed Q4"; ws_ds["D10"]=f"=DATE(B8+1,1,15)"; ws_ds["G10"]="CA Q4"
 
-    ws_ds["A48"] = "Payment Requirements"
-    ws_ds["A49"] = "Fed Target"; ws_ds["B49"] = "=IF(B4=0, B46 * 0.9, MIN(B46 * 0.9, B4 * 1.1))"
-    ws_ds["A50"] = "Total Fed Payments YTD"; ws_ds["B50"] = "=SUM('Wage Snapshots'!E:E) + SUMIFS(F3:F10, G3:G10, \"Fed*\")"
-    ws_ds["A51"] = "CA Target"; ws_ds["B51"] = "=IF(B5=0, B37 * 0.8, MIN(B37 * 0.8, B5 * 1.1))"
-    ws_ds["A52"] = "Total CA Payments YTD"; ws_ds["B52"] = "=SUM('Wage Snapshots'!F:F) + SUMIFS(F3:F10, G3:G10, \"CA*\")"
+    ws_ds["A49"] = "Payment Requirements"
+    ws_ds["A50"] = "Fed Target"; ws_ds["B50"] = "=IF(B4=0, B47 * 0.9, MIN(B47 * 0.9, B4 * 1.1))"
+    ws_ds["A51"] = "Total Fed Payments YTD"; ws_ds["B51"] = "=SUM('Wage Snapshots'!E:E) + SUMIFS(F3:F10, G3:G10, \"Fed*\")"
+    ws_ds["A52"] = "CA Target"; ws_ds["B52"] = "=IF(B5=0, B38 * 0.8, MIN(B38 * 0.8, B5 * 1.1))"
+    ws_ds["A53"] = "Total CA Payments YTD"; ws_ds["B53"] = "=SUM('Wage Snapshots'!F:F) + SUMIFS(F3:F10, G3:G10, \"CA*\")"
     
-    ws_ds["A54"] = "FEDERAL PAYMENT SCHEDULE"
+    ws_ds["A56"] = "FEDERAL PAYMENT SCHEDULE"
     for i, q in enumerate(["Q1 (Apr 15)", "Q2 (Jun 15)", "Q3 (Sep 15)", "Q4 (Jan 15)"], 1):
-        ws_ds[f"A{54+i}"] = q; ws_ds[f"B{54+i}"] = f"=B49 * {0.25*i}"; ws_ds[f"C{54+i}"] = f"=MAX(0, B{54+i} - B50)"
+        ws_ds[f"A{56+i}"] = q; ws_ds[f"B{56+i}"] = f"=B50 * {0.25*i}"; ws_ds[f"C{56+i}"] = f"=MAX(0, B{56+i} - B51)"
     
-    ws_ds["A60"] = "STATE PAYMENT SCHEDULE"
+    ws_ds["A63"] = "STATE PAYMENT SCHEDULE"
     for i, q in enumerate(["Q1 (Apr 15)", "Q2 (Jun 15)", "Q3 (Sep 15)", "Q4 (Jan 15)"], 1):
         rate = [0.3, 0.7, 0.7, 1.0][i-1]
-        ws_ds[f"A{60+i}"] = q; ws_ds[f"B{60+i}"] = f"=B51 * {rate}"; ws_ds[f"C{60+i}"] = f"=MAX(0, B{60+i} - B52)"
+        ws_ds[f"A{63+i}"] = q; ws_ds[f"B{63+i}"] = f"=B52 * {rate}"; ws_ds[f"C{63+i}"] = f"=MAX(0, B{63+i} - B53)"
 
-    # --- Data Validation (Restored) ---
+    # --- Data Validation ---
     dv_status = DataValidation(type="list", formula1='"Single,MFJ,MFS,HoH"', showErrorMessage=True)
     ws_ds.add_data_validation(dv_status); dv_status.add(ws_ds["B2"])
 
-    # --- Right Side Status Panel ---
+    # --- Right Side Status Panel (Action Center) ---
     ws_ds["I1"] = "PAYMENT ACTION CENTER"
-    ws_ds["I2"] = "FED DUE NOW:"; ws_ds["J2"] = "=IFS(B9<=DATE(B8,4,15), C55, B9<=DATE(B8,6,15), C56, B9<=DATE(B8,9,15), C57, TRUE, C58)"
+    ws_ds["I2"] = "FED DUE NOW:"; ws_ds["J2"] = "=IFS(B9<=DATE(B8,4,15), C57, B9<=DATE(B8,6,15), C58, B9<=DATE(B8,9,15), C59, TRUE, C60)"
     ws_ds["I3"] = "BY DEADLINE:"; ws_ds["J3"] = "=IFS(B9<=DATE(B8,4,15), \"04/15/\"&B8, B9<=DATE(B8,6,15), \"06/15/\"&B8, B9<=DATE(B8,9,15), \"09/15/\"&B8, TRUE, \"01/15/\"&(B8+1))"
-    ws_ds["I4"] = "Next FED Target:"; ws_ds["J4"] = "=IFS(B9<=DATE(B8,4,15), B55, B9<=DATE(B8,6,15), B56, B9<=DATE(B8,9,15), B57, TRUE, B58)"
-    ws_ds["I5"] = "FED Payments YTD:"; ws_ds["J5"] = "=B50"
+    ws_ds["I4"] = "Next FED Target:"; ws_ds["J4"] = "=IFS(B9<=DATE(B8,4,15), B57, B9<=DATE(B8,6,15), B58, B9<=DATE(B8,9,15), B59, TRUE, B60)"
+    ws_ds["I5"] = "FED Payments YTD:"; ws_ds["J5"] = "=B51"
     ws_ds["I6"] = "FED Status:"; ws_ds["J6"] = "=IF(J5>=J4, \"✅ Met (Surplus: \" & TEXT(J5-J4, \"$#,##0\") & \")\", \"🔴 Shortfall (\" & TEXT(J4-J5, \"$#,##0\") & \")\")"
     
-    ws_ds["I8"] = "CA DUE NOW:"; ws_ds["J8"] = "=IFS(B9<=DATE(B8,4,15), C61, B9<=DATE(B8,6,15), C62, B9<=DATE(B8,9,15), C63, TRUE, C64)"
+    ws_ds["I8"] = "CA DUE NOW:"; ws_ds["J8"] = "=IFS(B9<=DATE(B8,4,15), C64, B9<=DATE(B8,6,15), C65, B9<=DATE(B8,9,15), C66, TRUE, C67)"
     ws_ds["I9"] = "BY DEADLINE:"; ws_ds["J9"] = "=IFS(B9<=DATE(B8,4,15), \"04/15/\"&B8, B9<=DATE(B8,6,15), \"06/15/\"&B8, B9<=DATE(B8,9,15), \"09/15/\"&B8, TRUE, \"01/15/\"&(B8+1))"
-    ws_ds["I10"] = "Next CA Target:"; ws_ds["J10"] = "=IFS(B9<=DATE(B8,4,15), B61, B9<=DATE(B8,6,15), B62, B9<=DATE(B8,9,15), B63, TRUE, B64)"
-    ws_ds["I11"] = "CA Payments YTD:"; ws_ds["J11"] = "=B52"
+    ws_ds["I10"] = "Next CA Target:"; ws_ds["J10"] = "=IFS(B9<=DATE(B8,4,15), B64, B9<=DATE(B8,6,15), B65, B9<=DATE(B8,9,15), B66, TRUE, B67)"
+    ws_ds["I11"] = "CA Payments YTD:"; ws_ds["J11"] = "=B53"
     ws_ds["I12"] = "CA Status:"; ws_ds["J12"] = "=IF(J11>=J10, \"✅ Met (Surplus: \" & TEXT(J11-J10, \"$#,##0\") & \")\", \"🔴 Shortfall (\" & TEXT(J10-J11, \"$#,##0\") & \")\")"
     
     ws_ds["I15"] = "TAX DIAGNOSTICS"
-    ws_ds["I16"] = "Fed Target Method:"; ws_ds["J16"] = "=IF(B4=0, \"90% Forecast\", IF(B46*0.9 < B4*1.1, \"90% Forecast\", \"110% Safe Harbor\"))"
-    ws_ds["I17"] = "CA Target Method:"; ws_ds["J17"] = "=IF(B5=0, \"80% Forecast\", IF(B37*0.8 < B5*1.1, \"80% Forecast\", \"110% Safe Harbor\"))"
-    ws_ds["I18"] = "Effective Fed Rate:"; ws_ds["J18"] = "=B46 / MAX(1, B23)"
-    ws_ds["I19"] = "Effective CA Rate:"; ws_ds["J19"] = "=B37 / MAX(1, B23)"
-    ws_ds["I20"] = "Marginal Fed Bracket:"; ws_ds["J20"] = "=XLOOKUP(B28, FILTER('Tax Constants'!C3:C30, 'Tax Constants'!B3:B30=B2), FILTER('Tax Constants'!E3:E30, 'Tax Constants'!B3:B30=B2), 0, -1)"
-    ws_ds["I21"] = "Marginal CA Bracket:"; ws_ds["J21"] = "=XLOOKUP(B34, FILTER('Tax Constants'!C49:C84, 'Tax Constants'!B49:B84=B2), FILTER('Tax Constants'!E49:E84, 'Tax Constants'!B49:B84=B2), 0, -1)"
+    ws_ds["I16"] = "Fed Target Method:"; ws_ds["J16"] = "=IF(B4=0, \"90% Forecast\", IF(B47*0.9 < B4*1.1, \"90% Forecast\", \"110% Safe Harbor\"))"
+    ws_ds["I17"] = "CA Target Method:"; ws_ds["J17"] = "=IF(B5=0, \"80% Forecast\", IF(B38*0.8 < B5*1.1, \"80% Forecast\", \"110% Safe Harbor\"))"
+    ws_ds["I18"] = "Effective Fed Rate:"; ws_ds["J18"] = "=B47 / MAX(1, B24)"
+    ws_ds["I19"] = "Effective CA Rate:"; ws_ds["J19"] = "=B38 / MAX(1, B24)"
+    ws_ds["I20"] = "Marginal Fed Bracket:"; ws_ds["J20"] = "=XLOOKUP(B29, FILTER('Tax Constants'!C3:C30, 'Tax Constants'!B3:B30=B2), FILTER('Tax Constants'!E3:E30, 'Tax Constants'!B3:B30=B2), 0, -1)"
+    ws_ds["I21"] = "Marginal CA Bracket:"; ws_ds["J21"] = "=XLOOKUP(B35, FILTER('Tax Constants'!C49:C84, 'Tax Constants'!B49:B84=B2), FILTER('Tax Constants'!E49:E84, 'Tax Constants'!B49:B84=B2), 0, -1)"
     ws_ds["I22"] = "Deduction Applied:"; ws_ds["J22"] = "=IF(B6>XLOOKUP(B2, 'Tax Constants'!B3:B30, 'Tax Constants'!F3:F30, 0), \"ITEMIZED\", \"STANDARD\")"
     ws_ds["I23"] = "Bracket Year:"; ws_ds["J23"] = LOGIC_YEAR
     
     ws_ds["I25"] = "ACTIVE WARNINGS"
     ws_ds["I26"] = "Stale Snapshots:"; ws_ds["J26"] = "=IF(OR(MAX('Wage Snapshots'!A:A)=0, (B9 - MAX('Wage Snapshots'!A:A)) > 30), \"🔴 !!! 30+ DAYS OLD !!!\", \"OK\")"
     ws_ds["I27"] = "Prior Year Data:"; ws_ds["J27"] = "=IF(B4=0, \"🔴 WARNING: FED MISSING\", \"OK\")"
-    ws_ds["I28"] = "HSA Verification (CA):"; ws_ds["J28"] = "=IF(SUM('Wage Snapshots'!D:D)=0, \"✅ No HSA Detected\", IF(B20=B19, \"🔴 ERR: HSA NOT ADDED TO CA\", \"✅ HSA Corrected (CA)\"))"
+    ws_ds["I28"] = "HSA Verification (CA):"; ws_ds["J28"] = "=IF(SUM('Wage Snapshots'!D:D)=0, \"✅ No HSA Detected\", IF(B21=B20, \"🔴 ERR: HSA NOT ADDED TO CA\", \"✅ HSA Corrected (CA)\"))"
     ws_ds["I29"] = "Fed Brackets Stale:"; ws_ds["J29"] = f"=IF(B8 > J23, \"⚠️ FED STALE: \"&B8&\" brackets missing, using {LOGIC_YEAR} instead\", \"OK\")"
     ws_ds["I30"] = "CA Brackets Stale:"; ws_ds["J30"] = f"=IF(B8 > J23, \"⚠️ CA STALE: \"&B8&\" brackets missing, using {LOGIC_YEAR} instead\", \"OK\")"
 
@@ -302,8 +302,8 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
                         if cell.row == 8: cell.number_format = '0'
                         elif cell.row == 9: cell.number_format = FORMAT_DATE
                         elif cell.row == 13: cell.number_format = FORMAT_PERCENT
-                        elif (4 <= cell.row <= 52) or (55 <= cell.row <= 64): cell.number_format = FORMAT_CURRENCY
-                    if cell.column == 3 and (55 <= cell.row <= 64): cell.number_format = FORMAT_CURRENCY
+                        elif (4 <= cell.row <= 53) or (58 <= cell.row <= 70): cell.number_format = FORMAT_CURRENCY
+                    if cell.column == 3 and (58 <= cell.row <= 70): cell.number_format = FORMAT_CURRENCY
                     if cell.column == 10:
                         if cell.row == 23: cell.number_format = '0'
                         elif cell.row in [2,4,5,8,10,11]: cell.number_format = FORMAT_CURRENCY
