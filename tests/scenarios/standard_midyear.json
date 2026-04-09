@@ -1,0 +1,30 @@
+{
+  "name": "Standard Mid-Year Scenario (Single)",
+  "config": {
+    "status": "Single",
+    "dependents": 0,
+    "year": 2026,
+    "prior_year_fed": 50000.0,
+    "prior_year_ca": 12000.0,
+    "status_date": "04/08/2026"
+  },
+  "wage_snapshots": [
+    {
+      "date": "03/31/2026",
+      "gross": 75000.0,
+      "pretax": 10000.0,
+      "hsa": 2000.0,
+      "fed_withheld": 12000.0,
+      "ca_withheld": 4000.0
+    }
+  ],
+  "investment_snapshots": [
+    {
+      "quarter": "Q1",
+      "entity": "Common Brokerage",
+      "dividends_interest": 1000.0,
+      "short_term_gains": 500.0,
+      "long_term_gains": 2000.0
+    }
+  ]
+}

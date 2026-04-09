@@ -61,6 +61,16 @@ Use the included `parsing_agent_instructions.md` (also found in the Excel tab "P
 - **Investment Income Snapshots**: Input ledger for brokerage records.
 - **Tax Constants**: Self-documenting table of the Federal and CA data used in the simulation.
 - **Parsing Instructions for Agents**: Embedded prompt for use with LLMs.
+### 🧪 Testing & Validation
+To ensure the logic is accurate, this project includes an automated test suite that replicates the Excel logic in Python for cross-verification.
+
+**1. Run Automated Tests:**
+```bash
+PYTHONPATH=. ./venv/bin/pytest tests/test_logic.py
+```
+
+**2. Manual Verification:**
+See [tests/manual_test_samples.md](file:///Users/rosswait/repos/taxes/tests/manual_test_samples.md) for pre-formatted data you can paste into the workbook to verify the Dashboard results.
 
 ---
 
