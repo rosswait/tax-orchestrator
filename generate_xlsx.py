@@ -90,12 +90,13 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
     ws_ds["A13"] = "Future Income Weight (%)"; ws_ds["B13"] = 1.0
     ws_ds["A14"] = "Remaining Year Wage Income"; ws_ds["B14"] = "=IF(MAX('Wage Snapshots'!A:A)=0, 0, (SUM('Wage Snapshots'!B:B) / MAX(1, MAX('Wage Snapshots'!A:A) - DATE(B8,1,1))) * (DATE(B8,12,31) - MAX('Wage Snapshots'!A:A)))"
     ws_ds["A15"] = "Remaining Year Deductions"; ws_ds["B15"] = "=IF(MAX('Wage Snapshots'!A:A)=0, 0, (SUM('Wage Snapshots'!C:D) / MAX(1, MAX('Wage Snapshots'!A:A) - DATE(B8,1,1))) * (DATE(B8,12,31) - MAX('Wage Snapshots'!A:A)))"
+    ws_ds["A16"] = "Remaining Year Interest and Dividends"; ws_ds["B16"] = "=SUM('Investment Income Snapshots'!C:C) * ( (4 / ROUNDUP(MONTH(B9)/3, 0)) - 1 )"
 
     ws_ds["A17"] = "Consolidated Income Projection"
     ws_ds["A18"] = "Total Projected Wage Income"; ws_ds["B18"] = "=SUM('Wage Snapshots'!B:B) + (B14 * B13) + B12"
     ws_ds["A19"] = "Federal W-2 State Wages"; ws_ds["B19"] = "=B18 - SUM('Wage Snapshots'!C:D) - (B15 * B13)"
     ws_ds["A20"] = "CA W-2 State Wages"; ws_ds["B20"] = "=B18 - SUM('Wage Snapshots'!C:C) - (SUM('Wage Snapshots'!C:C)/MAX(1, SUM('Wage Snapshots'!C:D))) * B15 * B13"
-    ws_ds["A21"] = "Investment Ordinary (Div/Int + STG)"; ws_ds["B21"] = "=SUM('Investment Income Snapshots'!C:C) + SUM('Investment Income Snapshots'!D:D)"
+    ws_ds["A21"] = "Investment Ordinary (Div/Int + STG)"; ws_ds["B21"] = "=SUM('Investment Income Snapshots'!C:C) + B16 + SUM('Investment Income Snapshots'!D:D)"
     ws_ds["A22"] = "Investment Preferential (LTG Only)"; ws_ds["B22"] = "=SUM('Investment Income Snapshots'!E:E)"
     ws_ds["A23"] = "Total Projected Federal AGI"; ws_ds["B23"] = "=B19 + B21 + B22"
     ws_ds["A24"] = "Total Projected CA AGI"; ws_ds["B24"] = "=B20 + B21 + B22"
@@ -227,6 +228,7 @@ def create_tax_workbook(status="Single", dependents=0, year=2026):
         "B9": "The baseline date used to calculate your current 'Due Now' amounts and deadlines. Defaults to =TODAY(), but you can manually override it to simulate your tax position at a future or past date.",
         "B12": "Manual Offset: Adjust total income for one-off events like bonuses or unpaid leave that aren't recurring in your payroll snapshots.",
         "B13": "1.0 = normal earnings. Use < 1.0 if you expect to stop working. Use > 1.0 if you expect a year-end windfall.",
+        "B16": "Blunt Quarterly Projection: Projects Dividends/Interest for the remainder of the year based on the current quarter (derived from Status Date). Assumes steady-state quarterly receipts.",
         "I1": "The high-visibility focal point for immediate tax obligations. Values here update automatically based on today's date and your entered payments.",
         "I15": "A real-time health check on your tax situation. Verify your Effective Rates and Brackets to ensure the model matches your expectations.",
         "I16": "Specifies if the system is currently targeting 110% of last year's tax (Safe Harbor) or 90% of your current forecast (Forecast), prioritizing the lower baseline for your safety.",
