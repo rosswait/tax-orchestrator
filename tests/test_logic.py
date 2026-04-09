@@ -128,7 +128,7 @@ def test_hoh_dependent_warning():
     ds = wb["Dashboard"]
     
     # 1. Formula Presence
-    assert ds["I33"].value == "HOH Validation:"
+    assert ds["I33"].value == "HOH Dependents:"
     assert "B2=\"HoH\"" in ds["J33"].value
     assert "B3=0" in ds["J33"].value
     
