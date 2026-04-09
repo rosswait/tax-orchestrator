@@ -52,6 +52,18 @@ def test_progressive_brackets():
     results = engine.calculate_tax(20000, "fed_ord")
     assert results == pytest.approx(2161.5)
 
+@pytest.mark.parametrize("status,expected_on_20k", [
+    ("Single", 2161.50), # 10% on 11,925 + 12% on rem
+    ("MFJ", 2000.00),    # 10% on all 20k (MFJ 10% bracket goes to 23,850)
+    ("MFS", 2161.50),    # Same as Single
+    ("HoH", 2060.00),    # 10% on 17,000 + 12% on rem (3000 * .12 = 360) -> 1700 + 360 = 2060
+])
+def test_all_filing_statuses(status, expected_on_20k):
+    """Test D: Verify that all filing statuses resolve to the correct bracket logic"""
+    engine = TaxShadowEngine(year=2025, status=status)
+    tax = engine.calculate_tax(20000, "fed_ord")
+    assert tax == pytest.approx(expected_on_20k)
+
 def test_spreadsheet_formula_integrity():
     """Verify that the generated Excel template contains the correct formula targets after refactors"""
     filename = "tests/data/integrity_check.xlsx"
