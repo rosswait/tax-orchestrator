@@ -31,13 +31,15 @@ If the document is a paystub, RSU release confirmation, or W-2 income event, ext
 
 
 
-| Date | Gross W-2 Income | Pre-tax Deductions | HSA Contributions | Fed Tax Withheld | CA Tax Withheld | FICA/Med/SDI |
+| Employer / Source | Date | Gross W-2 Income | Pre-tax Deductions | HSA Contributions | Fed Tax Withheld | CA Tax Withheld | FICA/Med/SDI |
 
 |---|---|---|---|---|---|---|
 
 
 
 **Extraction Logic for Wage Snapshots:**
+
+*   **Employer / Source**: The name of the employer or source of income (e.g., `Google`, `Acme Corp`, `Spouse W-2`). If not clearly inferrable from the document, leave this field blank.
 
 *   **Date**: The date of the paystub or vest event (Format: MM/DD/YYYY).
 

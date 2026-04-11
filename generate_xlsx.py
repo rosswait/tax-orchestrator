@@ -54,6 +54,22 @@ def create_tax_workbook(status="Single", dependents=0, year=2026, fed_only=False
         fed_cg_brackets = constants["fed_cg"]
         ca_brackets = constants["ca"]
         surtaxes = constants["surtaxes"]
+        
+        fed_ord_start = 3
+        fed_ord_end = fed_ord_start + len(fed_ord_brackets) - 1
+        
+        fed_cg_start = fed_ord_end + 4
+        fed_cg_end = fed_cg_start + len(fed_cg_brackets) - 1
+        
+        if not fed_only:
+            ca_start = fed_cg_end + 4
+            ca_end = ca_start + len(ca_brackets) - 1
+            surtax_start = ca_end + 4
+        else:
+            surtax_start = fed_cg_end + 4
+            
+        surtax_end = surtax_start + len(surtaxes) - 1
+        
     except Exception as e:
         print(f"Error loading constants: {e}")
         return
@@ -92,39 +108,39 @@ def create_tax_workbook(status="Single", dependents=0, year=2026, fed_only=False
     ws_ds["A12"] = "Projection & Assumptions"
     ws_ds["A13"] = "Manual Income Offset ($)"; ws_ds["B13"] = 0
     ws_ds["A14"] = "Future Income Weight (%)"; ws_ds["B14"] = 1.0
-    ws_ds["A15"] = "Remaining Year Wage Income"; ws_ds["B15"] = "=IF(MAX('Wage Snapshots'!A:A)=0, 0, (SUM('Wage Snapshots'!B:B) / MAX(1, MAX('Wage Snapshots'!A:A) - DATE(B8,1,1))) * (DATE(B8,12,31) - MAX('Wage Snapshots'!A:A)))"
-    ws_ds["A16"] = "Remaining Year Deductions"; ws_ds["B16"] = "=IF(MAX('Wage Snapshots'!A:A)=0, 0, (SUM('Wage Snapshots'!C:D) / MAX(1, MAX('Wage Snapshots'!A:A) - DATE(B8,1,1))) * (DATE(B8,12,31) - MAX('Wage Snapshots'!A:A)))"
+    ws_ds["A15"] = "Remaining Year Wage Income"; ws_ds["B15"] = "=IF(MINIFS('Wage Snapshots'!B:B, 'Wage Snapshots'!B:B, \">0\")=0, 0, (SUM('Wage Snapshots'!C:C) / MAX(1, MINIFS('Wage Snapshots'!B:B, 'Wage Snapshots'!B:B, \">0\") - DATE(B8,1,1))) * (DATE(B8,12,31) - MINIFS('Wage Snapshots'!B:B, 'Wage Snapshots'!B:B, \">0\")))"
+    ws_ds["A16"] = "Remaining Year Deductions"; ws_ds["B16"] = "=IF(MINIFS('Wage Snapshots'!B:B, 'Wage Snapshots'!B:B, \">0\")=0, 0, (SUM('Wage Snapshots'!D:E) / MAX(1, MINIFS('Wage Snapshots'!B:B, 'Wage Snapshots'!B:B, \">0\") - DATE(B8,1,1))) * (DATE(B8,12,31) - MINIFS('Wage Snapshots'!B:B, 'Wage Snapshots'!B:B, \">0\")))"
     ws_ds["A17"] = "Remaining Year Interest and Dividends"; ws_ds["B17"] = "=SUM('Investment Income Snapshots'!C:C) * ( (4 / B10) - 1 )"
 
     ws_ds["A19"] = "Consolidated Income Projection"
-    ws_ds["A20"] = "Total Projected Wage Income"; ws_ds["B20"] = "=SUM('Wage Snapshots'!B:B) + (B15 * B14) + B13"
-    ws_ds["A21"] = "Federal W-2 State Wages"; ws_ds["B21"] = "=B20 - SUM('Wage Snapshots'!C:D) - (B16 * B14)"
-    if not fed_only: ws_ds["A22"] = "CA W-2 State Wages"; ws_ds["B22"] = "=B20 - SUM('Wage Snapshots'!C:C) - (SUM('Wage Snapshots'!C:C)/MAX(1, SUM('Wage Snapshots'!C:D))) * B16 * B14"
+    ws_ds["A20"] = "Total Projected Wage Income"; ws_ds["B20"] = "=SUM('Wage Snapshots'!C:C) + (B15 * B14) + B13"
+    ws_ds["A21"] = "Federal W-2 State Wages"; ws_ds["B21"] = "=B20 - SUM('Wage Snapshots'!D:E) - (B16 * B14)"
+    if not fed_only: ws_ds["A22"] = "CA W-2 State Wages"; ws_ds["B22"] = "=B20 - SUM('Wage Snapshots'!D:D) - (SUM('Wage Snapshots'!D:D)/MAX(1, SUM('Wage Snapshots'!D:E))) * B16 * B14"
     ws_ds["A23"] = "Investment Ordinary (Div/Int + STG)"; ws_ds["B23"] = "=SUM('Investment Income Snapshots'!C:C) + B17 + SUM('Investment Income Snapshots'!D:D)"
     ws_ds["A24"] = "Investment Preferential (LTG Only)"; ws_ds["B24"] = "=SUM('Investment Income Snapshots'!E:E)"
     ws_ds["A25"] = "Total Projected Federal AGI"; ws_ds["B25"] = "=B21 + B23 + B24"
     if not fed_only: ws_ds["A26"] = "Total Projected CA AGI"; ws_ds["B26"] = "=B22 + B23 + B24"
 
     ws_ds["A28"] = "Federal Tax Calculation"
-    ws_ds["A29"] = "Deduction Applied (Max Std/Item)"; ws_ds["B29"] = "=MAX(XLOOKUP(B2, 'Tax Constants'!B3:B30, 'Tax Constants'!F3:F30, 0), B6)"
+    ws_ds["A29"] = "Deduction Applied (Max Std/Item)"; ws_ds["B29"] = f"=MAX(XLOOKUP(B2, 'Tax Constants'!B{fed_ord_start}:B{fed_ord_end}, 'Tax Constants'!F{fed_ord_start}:F{fed_ord_end}, 0), B6)"
     ws_ds["A30"] = "Ordinary Taxable Income"; ws_ds["B30"] = "=MAX(0, B25 - B29 - B24)"
-    ws_ds["A31"] = "Ordinary Income Tax"; ws_ds["B31"] = "=XLOOKUP(B30, FILTER('Tax Constants'!C3:C30, 'Tax Constants'!B3:B30=B2), FILTER('Tax Constants'!D3:D30, 'Tax Constants'!B3:B30=B2), 0, -1) + (B30 - XLOOKUP(B30, FILTER('Tax Constants'!C3:C30, 'Tax Constants'!B3:B30=B2), FILTER('Tax Constants'!C3:C30, 'Tax Constants'!B3:B30=B2), 0, -1)) * XLOOKUP(B30, FILTER('Tax Constants'!C3:C30, 'Tax Constants'!B3:B30=B2), FILTER('Tax Constants'!E3:E30, 'Tax Constants'!B3:B30=B2), 0, -1)"
-    ws_ds["A32"] = "Capital Gains Tax"; ws_ds["B32"] = "=IF(B24>0, B24 * XLOOKUP(B30+B24, FILTER('Tax Constants'!C34:C45, 'Tax Constants'!B34:B45=B2), FILTER('Tax Constants'!D34:D45, 'Tax Constants'!B34:B45=B2), 0, -1), 0)"
+    ws_ds["A31"] = "Ordinary Income Tax"; ws_ds["B31"] = f"=XLOOKUP(B30, FILTER('Tax Constants'!C{fed_ord_start}:C{fed_ord_end}, 'Tax Constants'!B{fed_ord_start}:B{fed_ord_end}=B2), FILTER('Tax Constants'!D{fed_ord_start}:D{fed_ord_end}, 'Tax Constants'!B{fed_ord_start}:B{fed_ord_end}=B2), 0, -1) + (B30 - XLOOKUP(B30, FILTER('Tax Constants'!C{fed_ord_start}:C{fed_ord_end}, 'Tax Constants'!B{fed_ord_start}:B{fed_ord_end}=B2), FILTER('Tax Constants'!C{fed_ord_start}:C{fed_ord_end}, 'Tax Constants'!B{fed_ord_start}:B{fed_ord_end}=B2), 0, -1)) * XLOOKUP(B30, FILTER('Tax Constants'!C{fed_ord_start}:C{fed_ord_end}, 'Tax Constants'!B{fed_ord_start}:B{fed_ord_end}=B2), FILTER('Tax Constants'!E{fed_ord_start}:E{fed_ord_end}, 'Tax Constants'!B{fed_ord_start}:B{fed_ord_end}=B2), 0, -1)"
+    ws_ds["A32"] = "Capital Gains Tax"; ws_ds["B32"] = f"=IF(B24>0, B24 * XLOOKUP(B30+B24, FILTER('Tax Constants'!C{fed_cg_start}:C{fed_cg_end}, 'Tax Constants'!B{fed_cg_start}:B{fed_cg_end}=B2), FILTER('Tax Constants'!D{fed_cg_start}:D{fed_cg_end}, 'Tax Constants'!B{fed_cg_start}:B{fed_cg_end}=B2), 0, -1), 0)"
 
     if not fed_only:
         ws_ds["A34"] = "CA Tax Calculation"
-        ws_ds["A35"] = "CA Deduction Applied"; ws_ds["B35"] = "=MAX(XLOOKUP(B2, 'Tax Constants'!B49:B84, 'Tax Constants'!F49:F84, 0), B7)"
+        ws_ds["A35"] = "CA Deduction Applied"; ws_ds["B35"] = f"=MAX(XLOOKUP(B2, 'Tax Constants'!B{ca_start}:B{ca_end}, 'Tax Constants'!F{ca_start}:F{ca_end}, 0), B7)"
         ws_ds["A36"] = "CA Taxable Income"; ws_ds["B36"] = "=MAX(0, B26 - B35)"
-        ws_ds["A37"] = "CA Regular Tax"; ws_ds["B37"] = "=XLOOKUP(B36, FILTER('Tax Constants'!C49:C84, 'Tax Constants'!B49:B84=B2), FILTER('Tax Constants'!D49:D84, 'Tax Constants'!B49:B84=B2), 0, -1) + (B36 - XLOOKUP(B36, FILTER('Tax Constants'!C49:C84, 'Tax Constants'!B49:B84=B2), FILTER('Tax Constants'!C49:C84, 'Tax Constants'!B49:B84=B2), 0, -1)) * XLOOKUP(B36, FILTER('Tax Constants'!C49:C84, 'Tax Constants'!B49:B84=B2), FILTER('Tax Constants'!E49:E84, 'Tax Constants'!B49:B84=B2), 0, -1)"
+        ws_ds["A37"] = "CA Regular Tax"; ws_ds["B37"] = f"=XLOOKUP(B36, FILTER('Tax Constants'!C{ca_start}:C{ca_end}, 'Tax Constants'!B{ca_start}:B{ca_end}=B2), FILTER('Tax Constants'!D{ca_start}:D{ca_end}, 'Tax Constants'!B{ca_start}:B{ca_end}=B2), 0, -1) + (B36 - XLOOKUP(B36, FILTER('Tax Constants'!C{ca_start}:C{ca_end}, 'Tax Constants'!B{ca_start}:B{ca_end}=B2), FILTER('Tax Constants'!C{ca_start}:C{ca_end}, 'Tax Constants'!B{ca_start}:B{ca_end}=B2), 0, -1)) * XLOOKUP(B36, FILTER('Tax Constants'!C{ca_start}:C{ca_end}, 'Tax Constants'!B{ca_start}:B{ca_end}=B2), FILTER('Tax Constants'!E{ca_start}:E{ca_end}, 'Tax Constants'!B{ca_start}:B{ca_end}=B2), 0, -1)"
         ws_ds["A38"] = "CA MH Surcharge (1%)"; ws_ds["B38"] = "=IF(B36 > 1000000, (B36 - 1000000) * 0.01, 0)"
         ws_ds["A39"] = "Total CA Liability"; ws_ds["B39"] = "=B37 + B38"
 
     ws_ds["A41"] = "Final Liability & Surtaxes"
-    ws_ds["A42"] = "NIIT Threshold"; ws_ds["B42"] = "=XLOOKUP(B2, 'Tax Constants'!B88:B91, 'Tax Constants'!C88:C91, 200000)"
+    ws_ds["A42"] = "NIIT Threshold"; ws_ds["B42"] = f"=XLOOKUP(B2, 'Tax Constants'!B{surtax_start}:B{surtax_end}, 'Tax Constants'!C{surtax_start}:C{surtax_end}, 200000)"
     ws_ds["A43"] = "NIIT (Fed)"; ws_ds["B43"] = "=IF(B25 > B42, 0.038 * MIN(B25-B42, B23+B24), 0)"
-    ws_ds["A44"] = "Addl Medicare Threshold"; ws_ds["B44"] = "=XLOOKUP(B2, 'Tax Constants'!B88:B91, 'Tax Constants'!D88:D91, 200000)"
+    ws_ds["A44"] = "Addl Medicare Threshold"; ws_ds["B44"] = f"=XLOOKUP(B2, 'Tax Constants'!B{surtax_start}:B{surtax_end}, 'Tax Constants'!D{surtax_start}:D{surtax_end}, 200000)"
     ws_ds["A45"] = "Addl Medicare (Fed)"; ws_ds["B45"] = "=IF(B20 > B44, 0.009 * (B20-B44), 0)"
-    ws_ds["A46"] = "CTC Phaseout Start"; ws_ds["B46"] = "=XLOOKUP(B2, 'Tax Constants'!B88:B91, 'Tax Constants'!E88:E91, 200000)"
+    ws_ds["A46"] = "CTC Phaseout Start"; ws_ds["B46"] = f"=XLOOKUP(B2, 'Tax Constants'!B{surtax_start}:B{surtax_end}, 'Tax Constants'!E{surtax_start}:E{surtax_end}, 200000)"
     ws_ds["A47"] = "Child Tax Credit"; ws_ds["B47"] = "=IF(B25 > B46, MAX(0, (B3*2000)-((B25-B46)/1000)*50), B3*2000)"
     ws_ds["A48"] = "Total Federal Liability"; ws_ds["B48"] = "=B31 + B32 + B43 + B45 - B47"
 
@@ -142,10 +158,10 @@ def create_tax_workbook(status="Single", dependents=0, year=2026, fed_only=False
 
     ws_ds["A50"] = "Payment Requirements"
     ws_ds["A51"] = "Fed Target"; ws_ds["B51"] = "=IF(B4=0, B48 * 0.9, MIN(B48 * 0.9, B4 * 1.1))"
-    ws_ds["A52"] = "Total Fed Payments YTD"; ws_ds["B52"] = "=SUM('Wage Snapshots'!E:E) + SUMIFS(F3:F10, G3:G10, \"Fed*\")"
+    ws_ds["A52"] = "Total Fed Payments YTD"; ws_ds["B52"] = "=SUM('Wage Snapshots'!F:F) + SUMIFS(F3:F10, G3:G10, \"Fed*\")"
     if not fed_only:
         ws_ds["A53"] = "CA Target"; ws_ds["B53"] = "=IF(B5=0, B39 * 0.8, MIN(B39 * 0.8, B5 * 1.1))"
-        ws_ds["A54"] = "Total CA Payments YTD"; ws_ds["B54"] = "=SUM('Wage Snapshots'!F:F) + SUMIFS(F3:F10, G3:G10, \"CA*\")"
+        ws_ds["A54"] = "Total CA Payments YTD"; ws_ds["B54"] = "=SUM('Wage Snapshots'!G:G) + SUMIFS(F3:F10, G3:G10, \"CA*\")"
     
     ws_ds["A57"] = "FEDERAL PAYMENT SCHEDULE"
     for i, q in enumerate(["Q1 (Apr 15)", "Q2 (Jun 15)", "Q3 (Sep 15)", "Q4 (Jan 15)"], 1):
@@ -181,26 +197,27 @@ def create_tax_workbook(status="Single", dependents=0, year=2026, fed_only=False
     if not fed_only: ws_ds["I17"] = "CA Target Method:"; ws_ds["J17"] = "=IF(B5=0, \"80% Forecast\", IF(B39*0.8 < B5*1.1, \"80% Forecast\", \"110% Safe Harbor\"))"
     ws_ds["I18"] = "Effective Fed Rate:"; ws_ds["J18"] = "=B48 / MAX(1, B25)"
     if not fed_only: ws_ds["I19"] = "Effective CA Rate:"; ws_ds["J19"] = "=B39 / MAX(1, B25)"
-    ws_ds["I20"] = "Marginal Fed Bracket:"; ws_ds["J20"] = "=XLOOKUP(B30, FILTER('Tax Constants'!C3:C30, 'Tax Constants'!B3:B30=B2), FILTER('Tax Constants'!E3:E30, 'Tax Constants'!B3:B30=B2), 0, -1)"
-    if not fed_only: ws_ds["I21"] = "Marginal CA Bracket:"; ws_ds["J21"] = "=XLOOKUP(B36, FILTER('Tax Constants'!C49:C84, 'Tax Constants'!B49:B84=B2), FILTER('Tax Constants'!E49:E84, 'Tax Constants'!B49:B84=B2), 0, -1)"
+    ws_ds["I20"] = "Marginal Fed Bracket:"; ws_ds["J20"] = f"=XLOOKUP(B30, FILTER('Tax Constants'!C{fed_ord_start}:C{fed_ord_end}, 'Tax Constants'!B{fed_ord_start}:B{fed_ord_end}=B2), FILTER('Tax Constants'!E{fed_ord_start}:E{fed_ord_end}, 'Tax Constants'!B{fed_ord_start}:B{fed_ord_end}=B2), 0, -1)"
+    if not fed_only: ws_ds["I21"] = "Marginal CA Bracket:"; ws_ds["J21"] = f"=XLOOKUP(B36, FILTER('Tax Constants'!C{ca_start}:C{ca_end}, 'Tax Constants'!B{ca_start}:B{ca_end}=B2), FILTER('Tax Constants'!E{ca_start}:E{ca_end}, 'Tax Constants'!B{ca_start}:B{ca_end}=B2), 0, -1)"
     ws_ds["I22"] = "Deduction Applied:"; ws_ds["J22"] = "=IF(B6>XLOOKUP(B2, 'Tax Constants'!B3:B30, 'Tax Constants'!F3:F30, 0), \"ITEMIZED\", \"STANDARD\")"
     ws_ds["I23"] = "Bracket Year:"; ws_ds["J23"] = LOGIC_YEAR
     ws_ds["I24"] = "Inferred Quarter:"; ws_ds["J24"] = "=B10"
     
     ws_ds["I26"] = "ACTIVE WARNINGS"
-    ws_ds["I27"] = "Stale Snapshots:"; ws_ds["J27"] = "=IF(OR(MAX('Wage Snapshots'!A:A)=0, (B9 - MAX('Wage Snapshots'!A:A)) > 30), \"🔴 !!! 30+ DAYS OLD !!!\", \"OK\")"
+    ws_ds["I27"] = "Stale Snapshots:"; ws_ds["J27"] = "=IF(OR(MAX('Wage Snapshots'!B:B)=0, (B9 - MAX('Wage Snapshots'!B:B)) > 30), \"🔴 !!! 30+ DAYS OLD !!!\", \"OK\")"
     ws_ds["I28"] = "Prior Year Data:"; ws_ds["J28"] = "=IF(B4=0, \"🔴 WARNING: FED MISSING\", \"OK\")"
-    if not fed_only: ws_ds["I29"] = "HSA Verification (CA):"; ws_ds["J29"] = "=IF(SUM('Wage Snapshots'!D:D)=0, \"✅ No HSA Detected\", IF(B22=B21, \"🔴 ERR: HSA NOT ADDED TO CA\", \"✅ HSA Corrected (CA)\"))"
+    if not fed_only: ws_ds["I29"] = "HSA Verification (CA):"; ws_ds["J29"] = "=IF(SUM('Wage Snapshots'!E:E)=0, \"✅ No HSA Detected\", IF(B22=B21, \"🔴 ERR: HSA NOT ADDED TO CA\", \"✅ HSA Corrected (CA)\"))"
     ws_ds["I30"] = "Fed Brackets Stale:"; ws_ds["J30"] = f"=IF(B8 > J23, \"⚠️ FED STALE: \"&B8&\" brackets missing, using {LOGIC_YEAR} instead\", \"OK\")"
     if not fed_only: ws_ds["I31"] = "CA Brackets Stale:"; ws_ds["J31"] = f"=IF(B8 > J23, \"⚠️ CA STALE: \"&B8&\" brackets missing, using {LOGIC_YEAR} instead\", \"OK\")"
     ws_ds["I32"] = "Filing Date Validity:"; ws_ds["J32"] = "=IF(OR(B9 < DATE(B8,1,1), B9 > DATE(B8+1,1,30)), \"🔴 ERR: DATE OUT OF RANGE\", \"OK\")"
     ws_ds["I33"] = "HOH Dependents:"; ws_ds["J33"] = "=IF(AND(B2=\"HoH\", B3=0), \"⚠️ Head of Household with 0 dependents is unusual\", \"OK\")"
+    ws_ds["I34"] = "Stale Income Data:"; ws_ds["J34"] = "=IF(AND(MINIFS('Wage Snapshots'!B:B, 'Wage Snapshots'!B:B, \">0\")>0, ROUNDUP(MONTH(MINIFS('Wage Snapshots'!B:B, 'Wage Snapshots'!B:B, \">0\"))/3, 0) < B10), \"⚠️ WAGES FROM PRIOR QTR\", IF(OR(AND(B10>1, COUNTIF('Investment Income Snapshots'!A:A, \"*Q1*\")>0), AND(B10>2, COUNTIF('Investment Income Snapshots'!A:A, \"*Q2*\")>0), AND(B10>3, COUNTIF('Investment Income Snapshots'!A:A, \"*Q3*\")>0)), \"⚠️ INV. INCOME FROM PRIOR QTR\", \"OK\"))"
 
     # --- 5. Data & Constants Tabs ---
     ws_inv = wb.create_sheet("Investment Income Snapshots")
     ws_inv.append(["Quarter", "Broker", "Dividends & Interest", "Short-Term Gains", "Long-Term Gains"])
     ws_wage = wb.create_sheet("Wage Snapshots")
-    ws_wage.append(["Date", "Gross W-2 Income", "Pre-tax Deductions", "HSA Contributions", "Fed Tax Withheld", "CA Tax Withheld", "FICA/Med/SDI"])
+    ws_wage.append(["Employer / Source", "Date", "Gross W-2 Income (YTD)", "Pre-tax Deductions (YTD)", "HSA Contributions (YTD)", "Fed Tax Withheld (YTD)", "CA Tax Withheld (YTD)", "FICA/Med/SDI (YTD)"])
     ws_const = wb.create_sheet("Tax Constants")
     ws_const.append(["Table A: Federal Brackets (Ordinary Income)"])
     ws_const.append(["Year", "Status", "Bracket Floor", "Base Tax", "Marginal Rate", "Standard Deduction"])
@@ -250,7 +267,8 @@ def create_tax_workbook(status="Single", dependents=0, year=2026, fed_only=False
         "I24": "Displays the quarter the logic is currently assuming for projections based on the Filing Date.",
         "I30": "Warns if Federal brackets are from prior years.",
         "I32": "Flags red if the Filing Date is before the Tax Year start or after the January buffer ends.",
-        "I33": "Warns if Head of Household is selected with zero dependents (legal but rare)."
+        "I33": "Warns if Head of Household is selected with zero dependents (legal but rare).",
+        "I34": "Flags if you have stale records from previous quarters which will artificially warp your pro-ration math."
     }
     if not fed_only:
         ANN.update({

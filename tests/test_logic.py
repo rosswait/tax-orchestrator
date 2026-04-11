@@ -170,3 +170,42 @@ def test_federal_formula_parity():
     # Cleanup
     os.remove(ca_file)
     os.remove(fed_file)
+
+def test_multiple_wage_sources_conservative():
+    """Test I: Verify that multiple wage sources use the earliest date for a conservative (higher) projection"""
+    engine = TaxShadowEngine(year=2026, status="Single")
+    
+    # Scenario: Two sources with different dates
+    # Source A: March 15 (74 days elapsed)
+    # Source B: March 31 (90 days elapsed)
+    # Total Gross: 15,000
+    # Conservative Rate (MIN date) = 15,000 / 74 = 202.7/day
+    # Standard Rate (MAX date) = 15,000 / 90 = 166.6/day
+    
+    scenario = {
+        "config": {"filing_date": "04/01/2026"},
+        "wage_snapshots": [
+            {"date": "03/15/2026", "gross": 5000, "pretax": 0, "hsa": 0},
+            {"date": "03/31/2026", "gross": 10000, "pretax": 0, "hsa": 0}
+        ],
+        "investment_snapshots": []
+    }
+    
+    results = engine.run_scenario(scenario)
+    
+    # Yearly projection calculation:
+    # 15,000 / 73 days * (365 total days) = 75,000 approx
+    assert results["fed_agi"] > 74000 
+    assert results["fed_agi"] < 75500 # within rounding distance
+
+def test_ca_mfs_parity():
+    """Test J: Verify that CA MFS and CA Single brackets are identical for the same income"""
+    engine_single = TaxShadowEngine(year=2025, status="Single")
+    engine_mfs = TaxShadowEngine(year=2025, status="MFS")
+    
+    income = 100000
+    tax_single = engine_single.calculate_tax(income, "ca")
+    tax_mfs = engine_mfs.calculate_tax(income, "ca")
+    
+    assert tax_single == tax_mfs
+    assert tax_single > 0

@@ -52,21 +52,22 @@ class TaxShadowEngine:
         q_inferred = self.calculate_inferred_quarter(filing_date)
         
         # 1. Projections
-        latest_wage = scenario["wage_snapshots"][-1]
-        dt_latest = datetime.strptime(latest_wage["date"], "%m/%d/%Y")
-        days_elapsed = (dt_latest - datetime(self.year, 1, 1)).days
-        days_total = 365 # ignoring leap years for simplicity in this baseline, or use 366
-        days_remaining = (datetime(self.year, 12, 31) - dt_latest).days
+        snapshot_dates = [datetime.strptime(s["date"], "%m/%d/%Y") for s in scenario["wage_snapshots"]]
+        dt_conservative = min(snapshot_dates)
+        days_elapsed = (dt_conservative - datetime(self.year, 1, 1)).days
+        days_total = 365 
+        days_remaining = (datetime(self.year, 12, 31) - dt_conservative).days
         
-        ytd_gross = latest_wage["gross"]
+        ytd_gross = sum(s["gross"] for s in scenario["wage_snapshots"])
+        ytd_pretax = sum(s["pretax"] for s in scenario["wage_snapshots"])
+        ytd_hsa = sum(s["hsa"] for s in scenario["wage_snapshots"])
+        
         daily_rate = ytd_gross / max(1, days_elapsed)
         rem_wage = daily_rate * days_remaining
         
         total_projected_wage = ytd_gross + (rem_wage * config.get("future_weight", 1.0)) + config.get("manual_offset", 0)
         
         # Deductions
-        ytd_pretax = latest_wage["pretax"]
-        ytd_hsa = latest_wage["hsa"]
         daily_deduct = (ytd_pretax + ytd_hsa) / max(1, days_elapsed)
         rem_deduct = daily_deduct * days_remaining
         
