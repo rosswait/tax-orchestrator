@@ -81,9 +81,10 @@ def test_dividend_projection_multipliers(filing_date, expected_multiplier):
 def test_spreadsheet_formula_integrity():
     """Verify that the generated Excel template contains the correct formula targets after refactors"""
     filename = "tests/data/integrity_check.xlsx"
-    # Ensure constants folder exists for generation
-    create_tax_workbook(status="Single", dependents=0, year=2026)
-    os.rename("Estimated_Tax_Calculator_Template.xlsx", filename)
+    # Use a dedicated test filename to avoid clobbering the user's main xlsx
+    test_output = "Estimated_Tax_Calculator_TEST.xlsx"
+    create_tax_workbook(status="Single", dependents=0, year=2026, filename=test_output)
+    os.rename(test_output, filename)
     
     wb = openpyxl.load_workbook(filename)
     ds = wb["Dashboard"]
@@ -105,8 +106,9 @@ def test_filing_date_validity_check():
     """Test F: Verify the Active Warning for Filing Date out-of-range detection"""
     filename = "tests/data/validity_test.xlsx"
     # Generate for 2026
-    create_tax_workbook(status="Single", dependents=0, year=2026)
-    os.rename("Estimated_Tax_Calculator_Template.xlsx", filename)
+    test_output = "Estimated_Tax_Calculator_TEST.xlsx"
+    create_tax_workbook(status="Single", dependents=0, year=2026, filename=test_output)
+    os.rename(test_output, filename)
     
     wb = openpyxl.load_workbook(filename)
     ds = wb["Dashboard"]
@@ -121,8 +123,9 @@ def test_filing_date_validity_check():
 def test_hoh_dependent_warning():
     """Test G: Verify the Active Warning for HoH with 0 dependents"""
     filename = "tests/data/hoh_test.xlsx"
-    create_tax_workbook(status="HoH", dependents=0, year=2026)
-    os.rename("Estimated_Tax_Calculator_Template.xlsx", filename)
+    test_output = "Estimated_Tax_Calculator_TEST.xlsx"
+    create_tax_workbook(status="HoH", dependents=0, year=2026, filename=test_output)
+    os.rename(test_output, filename)
     
     wb = openpyxl.load_workbook(filename)
     ds = wb["Dashboard"]
@@ -134,3 +137,36 @@ def test_hoh_dependent_warning():
     
     # Clean up
     os.remove(filename)
+def test_federal_formula_parity():
+    """Test H: Verify that Federal Tax formulas are identical in both CA and Fed-only modes"""
+    ca_file = "tests/data/parity_ca.xlsx"
+    fed_file = "tests/data/parity_fed.xlsx"
+    
+    # Generate both versions
+    create_tax_workbook(status="Single", dependents=1, year=2026, fed_only=False, filename=ca_file)
+    create_tax_workbook(status="Single", dependents=1, year=2026, fed_only=True, filename=fed_file)
+    
+    wb_ca = openpyxl.load_workbook(ca_file)
+    wb_fed = openpyxl.load_workbook(fed_file)
+    ds_ca = wb_ca["Dashboard"]
+    ds_fed = wb_fed["Dashboard"]
+    
+    # Key Federal Cells that must be identical
+    federal_cells = [
+        "B21", # Fed W-2 Wages
+        "B25", # Fed AGI
+        "B31", # Fed Ord Tax
+        "B48", # Total Fed Liability
+        "B51", # Fed Target
+        "J2",  # Fed Due Now
+        "J6",  # Fed Status
+    ]
+    
+    for coord in federal_cells:
+        formula_ca = ds_ca[coord].value
+        formula_fed = ds_fed[coord].value
+        assert formula_ca == formula_fed, f"Federal formula mismatch at {coord}: CA='{formula_ca}', Fed='{formula_fed}'"
+    
+    # Cleanup
+    os.remove(ca_file)
+    os.remove(fed_file)
