@@ -13,3 +13,5 @@ venv/
 # but if you want to commit the template, remove this.
 # Tax_Orchestrator_Template.xlsx
 # Tax_Orchestrator_Template_Input.xlsx
+gcp-test-key.json
+token.pickle

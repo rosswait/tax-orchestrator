@@ -68,3 +68,17 @@ Use the included `parsing_agent_instructions.md` (also found in the Excel tab "P
 **For Informational Purposes Only**
 
 This tool is intended for informational and educational purposes only and does not constitute professional tax, legal, or accounting advice. Tax laws are complex and subject to change. You should consult with a qualified tax professional before making financial decisions or filing your returns. The author assumes no liability for errors, omissions, or penalties resulting from the use of this workbook.
+
+---
+
+## 🧪 E2E Formula Testing (Optional)
+This repository contains a test suite that dynamically evaluates the generated `.xlsx` templates against Google Sheets to ensure mathematical integration.
+
+### Setup Requirements
+If you wish to run these tests:
+1. Create a Google Cloud Project and enable the **Google Drive API** and **Google Sheets API**.
+2. Create a Service Account and download the JSON key.
+3. Set the environment variable: `export GOOGLE_APPLICATION_CREDENTIALS=/path/to/your/service-account.json`
+4. Run the tests: `pytest -m e2e`
+
+*Note: These tests are explicitly excluded from standard `pytest` runs due to API latency.*
