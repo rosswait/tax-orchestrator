@@ -160,7 +160,7 @@ def create_tax_workbook(status="Single", dependents=0, year=2026, fed_only=False
     ws_ds["A51"] = "Fed Target"; ws_ds["B51"] = "=IF(B4=0, B48 * 0.9, MIN(B48 * 0.9, B4 * 1.1))"
     ws_ds["A52"] = "Total Fed Payments YTD"; ws_ds["B52"] = "=SUM('Wage Snapshots'!F:F) + SUMIFS(F3:F10, G3:G10, \"Fed*\")"
     if not fed_only:
-        ws_ds["A53"] = "CA Target"; ws_ds["B53"] = "=IF(B5=0, B39 * 0.8, MIN(B39 * 0.8, B5 * 1.1))"
+        ws_ds["A53"] = "CA Target"; ws_ds["B53"] = "=IF(B5=0, B39 * 0.9, MIN(B39 * 0.9, B5 * 1.1))"
         ws_ds["A54"] = "Total CA Payments YTD"; ws_ds["B54"] = "=SUM('Wage Snapshots'!G:G) + SUMIFS(F3:F10, G3:G10, \"CA*\")"
     
     ws_ds["A57"] = "FEDERAL PAYMENT SCHEDULE"
@@ -194,7 +194,7 @@ def create_tax_workbook(status="Single", dependents=0, year=2026, fed_only=False
     
     ws_ds["I15"] = "TAX DIAGNOSTICS"
     ws_ds["I16"] = "Fed Target Method:"; ws_ds["J16"] = "=IF(B4=0, \"90% Forecast\", IF(B48*0.9 < B4*1.1, \"90% Forecast\", \"110% Safe Harbor\"))"
-    if not fed_only: ws_ds["I17"] = "CA Target Method:"; ws_ds["J17"] = "=IF(B5=0, \"80% Forecast\", IF(B39*0.8 < B5*1.1, \"80% Forecast\", \"110% Safe Harbor\"))"
+    if not fed_only: ws_ds["I17"] = "CA Target Method:"; ws_ds["J17"] = "=IF(B5=0, \"90% Forecast\", IF(B39*0.9 < B5*1.1, \"90% Forecast\", \"110% Safe Harbor\"))"
     ws_ds["I18"] = "Effective Fed Rate:"; ws_ds["J18"] = "=B48 / MAX(1, B25)"
     if not fed_only: ws_ds["I19"] = "Effective CA Rate:"; ws_ds["J19"] = "=B39 / MAX(1, B25)"
     ws_ds["I20"] = "Marginal Fed Bracket:"; ws_ds["J20"] = f"=XLOOKUP(B30, FILTER('Tax Constants'!C{fed_ord_start}:C{fed_ord_end}, 'Tax Constants'!B{fed_ord_start}:B{fed_ord_end}=B2), FILTER('Tax Constants'!E{fed_ord_start}:E{fed_ord_end}, 'Tax Constants'!B{fed_ord_start}:B{fed_ord_end}=B2), 0, -1)"
