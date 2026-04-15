@@ -13,13 +13,21 @@ class TaxShadowEngine:
         base_dir = "constants"
         available_years = sorted([int(d) for d in os.listdir(base_dir) if d.isdigit()], reverse=True)
         logic_year = target_year if target_year in available_years else available_years[0]
-        data_path = os.path.join(base_dir, str(logic_year))
         
         data = {}
         for key, filename in [("fed_ord", "federal_ord.json"), ("fed_cg", "federal_cg.json"), 
                              ("ca", "ca_brackets.json"), ("surtaxes", "surtaxes.json")]:
-            with open(os.path.join(data_path, filename), "r") as f:
-                data[key] = json.load(f)
+            found = False
+            for yr in available_years:
+                if yr > logic_year: continue
+                path = os.path.join(base_dir, str(yr), filename)
+                if os.path.exists(path):
+                    with open(path, "r") as f:
+                        data[key] = json.load(f)
+                    found = True
+                    break
+            if not found:
+                raise FileNotFoundError(f"Could not find {filename} in any year <= {logic_year}")
         return data
 
     def calculate_inferred_quarter(self, filing_date_str):
@@ -112,12 +120,23 @@ class TaxShadowEngine:
         ca_taxable = max(0, ca_agi - ca_deduction)
         ca_tax = self.calculate_tax(ca_taxable, "ca")
         
+        # Targets
+        prior_fed = config.get("prior_year_fed", 0)
+        fed_target = fed_ord_tax + fed_cg_tax * 0.9 if prior_fed == 0 else min((fed_ord_tax + fed_cg_tax) * 0.9, prior_fed * 1.1)
+        
+        prior_ca = config.get("prior_year_ca", 0)
+        ca_is_millionaire = (self.status == "MFS" and ca_agi >= 500000) or (self.status != "MFS" and ca_agi >= 1000000)
+        ca_target = ca_tax * 0.9 if (prior_ca == 0 or ca_is_millionaire) else min(ca_tax * 0.9, prior_ca * 1.1)
+
         return {
             "inferred_quarter": q_inferred,
             "fed_agi": fed_agi,
             "ca_agi": ca_agi,
             "fed_liability": fed_ord_tax + fed_cg_tax, # simplistic for surtax check
-            "ca_liability": ca_tax
+            "ca_liability": ca_tax,
+            "fed_target": fed_target,
+            "ca_target": ca_target,
+            "ca_target_is_millionaire_capped": ca_is_millionaire
         }
 
 if __name__ == "__main__":
