@@ -116,3 +116,55 @@ def test_ca_mfs_parity():
     
     assert tax_single == tax_mfs
     assert tax_single > 0
+
+def test_federal_safe_harbor_logic():
+    """Test K: Verify Federal Safe Harbor logic (110% of prior year vs 90% of current year)"""
+    engine = TaxShadowEngine(year=2026, status="Single")
+    
+    # Base scenario: High current year income, low prior year income.
+    # The target should be capped at 110% of the small prior year tax.
+    scenario_low_prior = {
+        "config": {"filing_date": "04/01/2026", "prior_year_fed": 10000},
+        "wage_snapshots": [{"date": "03/31/2026", "gross": 500000, "pretax": 0, "hsa": 0}], # Massive current income
+        "investment_snapshots": []
+    }
+    res_low = engine.run_scenario(scenario_low_prior)
+    # Expected Fed Target = 110% of 10,000 = 11,000
+    assert res_low["fed_target"] == 11000
+    
+    # Scenario: Low current year income, very high prior year income
+    # The target should just be 90% of the small current year tax.
+    scenario_high_prior = {
+        "config": {"filing_date": "04/01/2026", "prior_year_fed": 500000},
+        "wage_snapshots": [{"date": "03/31/2026", "gross": 10000, "pretax": 0, "hsa": 0}], # Tiny current income
+        "investment_snapshots": []
+    }
+    res_high = engine.run_scenario(scenario_high_prior)
+    # Target should be 90% of the current liability, NOT 110% of prior
+    assert res_high["fed_target"] == res_high["fed_liability"] * 0.9
+    assert res_high["fed_target"] < 50000
+
+def test_ca_safe_harbor_millionaire_limit():
+    """Test L: Verify CA Safe Harbor is voided when CA AGI exceeds $1M limit"""
+    engine = TaxShadowEngine(year=2026, status="Single")
+    
+    # Scenario: Massive current year windfall ($2M), but small prior year CA tax ($10,000)
+    # Normal safe harbor would say "just pay $11,000 (110%)"
+    # But because CA AGI > 1,000,000, it MUST void safe harbor and demand 90% of current liability.
+    scenario_windfall = {
+        "config": {"filing_date": "04/01/2026", "prior_year_ca": 10000},
+        "wage_snapshots": [{"date": "03/31/2026", "gross": 500000, "pretax": 0, "hsa": 0}], # $500k Q1 -> $2M annualized
+        "investment_snapshots": []
+    }
+    
+    res = engine.run_scenario(scenario_windfall)
+    
+    # First, prove that annualized AGI is indeed over $1M
+    assert res["ca_agi"] > 1000000
+    # Prove the millionaire flag triggers
+    assert res["ca_target_is_millionaire_capped"] is True
+    
+    # Check the actual target math. It MUST be 90% of the current liability.
+    # It must completely ignore the 11,000 (110% of prior year) safe harbor.
+    assert res["ca_target"] == pytest.approx(res["ca_liability"] * 0.9)
+    assert res["ca_target"] > 100000
