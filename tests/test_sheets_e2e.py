@@ -21,6 +21,7 @@ import time
 import openpyxl
 import datetime
 from generate_xlsx import create_tax_workbook
+from tests.logic_engine import TaxShadowEngine
 
 # Google imports
 try:
@@ -151,12 +152,19 @@ def test_wage_injection_calculation(drive_service, gspread_client):
         ca_liability_str = dashboard.acell("B39").value
         ca_val = float(str(ca_liability_str).replace("$", "").replace(",", ""))
         
-        # Verify taxes are mathematically positive and reasonable for 100k income
-        assert fed_val > 5000
-        assert fed_val < 25000
+        # Use the Shadow Engine to predict the EXACT output to the penny
+        engine = TaxShadowEngine(year=2026, status="Single")
+        scenario = {
+            "config": {"filing_date": "12/31/2026"},
+            "wage_snapshots": [{"date": "12/31/2026", "gross": 100000, "pretax": 0, "hsa": 0}],
+            "investment_snapshots": []
+        }
+        expected = engine.run_scenario(scenario)
         
-        assert ca_val > 1000
-        assert ca_val < 10000
+        # Verify the Google Sheets calculation matches the Python shadow engine identically
+        assert fed_val == pytest.approx(expected["fed_liability"], 0.01)
+        assert ca_val == pytest.approx(expected["ca_liability"], 0.01)
+
     finally:
         drive_service.files().delete(fileId=file_id).execute()
         if os.path.exists(filename):
